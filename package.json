@@ -17,6 +17,11 @@
     "sunrabbit123 <qudwls185@naver.com>"
   ],
   "license": "./LICENSE",
+  "dependencies": {
+    "openai": "^4.78.1",
+    "typia": "^7.5.1",
+    "@samchon/openapi": "^2.3.4"
+  },
   "devDependencies": {
     "@types/node": "^22.10.6",
     "@vitest/coverage-istanbul": "^2.1.8",
