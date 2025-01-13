@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 
-import { IAgentPrompt } from "./prompt";
-import { MetaAgent } from ".";
-import { IAgentOperation } from "./operation";
+import { IAgentPrompt } from "./IAgentPrompt";
+import { MetaAgent } from "../MetaAgent";
+import { IAgentOperation } from "./IAgentOperation";
 /**
  * A.I. chatbot event.
  */

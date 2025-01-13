@@ -1,18 +1,18 @@
 import { IHttpLlmFunction } from "@samchon/openapi";
-import { IController } from "./controller";
+import { IAgentController } from "./IAgentController";
 import { ILlmFunctionOfValidate } from "typia";
 
 export type IAgentOperation = IAgentOperation.IHttp | IAgentOperation.IClass;
 export namespace IAgentOperation {
   export type IHttp = IBase<
     "http",
-    IController.IHttp,
+    IAgentController.IHttp,
     IHttpLlmFunction<"chatgpt">
   >;
 
   export type IClass = IBase<
     "class",
-    IController.IClass,
+    IAgentController.IClass,
     ILlmFunctionOfValidate<"chatgpt">
   >;
 

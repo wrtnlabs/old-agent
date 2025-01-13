@@ -1,8 +1,9 @@
-import { IAgentPrompt } from "./prompt";
-import { IController } from "./controller";
-import { IProvider } from "./provider";
-import { IAgentTokenUsage } from "./token_usage";
-import { IAgentEvent } from "./event";
+import { IAgentPrompt } from "./structures/IAgentPrompt";
+import { IAgentTokenUsage } from "./structures/IAgentTokenUsage";
+import { IAgentEvent } from "./structures/IAgentEvent";
+import { IAgentController } from "./structures/IAgentController";
+import { IAgentProvider } from "./structures/IAgentProvider";
+import { Primitive } from "typia";
 
 export namespace MetaAgent {
   export type Source =
@@ -12,10 +13,10 @@ export namespace MetaAgent {
     | "execute"
     | "describe";
   export type IProps = {
-    controllers: IController[];
-    provider: IProvider;
+    controllers: IAgentController[];
+    provider: IAgentProvider;
     config?: IConfig;
-    histories?: [];
+    histories?: Primitive<IAgentPrompt>[];
   };
 
   export interface IConfig {
@@ -99,19 +100,13 @@ export namespace MetaAgent {
      */
     systemPrompt?: {
       common?: (config?: IConfig) => string;
-      initialize?: (histories: MetaAgent.IPrompt[]) => string;
-      select?: (histories: MetaAgent.IPrompt[]) => string;
-      cancel?: (histories: MetaAgent.IPrompt[]) => string;
-      execute?: (histories: MetaAgent.IPrompt[]) => string;
+      initialize?: (histories: IAgentPrompt[]) => string;
+      select?: (histories: IAgentPrompt[]) => string;
+      cancel?: (histories: IAgentPrompt[]) => string;
+      execute?: (histories: IAgentPrompt[]) => string;
       describe?: (histories: IAgentPrompt.IExecute[]) => string;
     };
   }
-
-  export type IPrompt = IAgentPrompt;
-  export type IController = IController.IHttp | IController.IClass;
-  export type IProvider = IProvider.IChatGpt;
-  export type ITokenUsage = IAgentTokenUsage;
-  export type IEvent = IAgentEvent;
 }
 
 export class MetaAgent {
@@ -142,7 +137,7 @@ export class MetaAgent {
    * @param content The content to talk
    * @returns List of newly created chat prompts
    */
-  public async conversate(content: string): Promise<MetaAgent.IPrompt[]> {
+  public async conversate(content: string): Promise<IAgentPrompt[]> {
     throw Error("Not implemented");
   }
 
@@ -153,7 +148,7 @@ export class MetaAgent {
    *
    * @returns List of chat prompts
    */
-  public getPromptHistories(): MetaAgent.IPrompt[] {
+  public getPromptHistories(): IAgentPrompt[] {
     throw Error("Not implemented");
   }
 
@@ -165,7 +160,7 @@ export class MetaAgent {
    *
    * @returns Cost of the A.I. chatbot
    */
-  public getTokenUsage(): MetaAgent.ITokenUsage {
+  public getTokenUsage(): IAgentTokenUsage {
     throw Error("Not implemented");
   }
 
