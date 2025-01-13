@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 
-export type IProvider = IProvider.IChatGpt;
-export namespace IProvider {
+export type IAgentProvider = IAgentProvider.IChatGpt;
+export namespace IAgentProvider {
   export interface IChatGpt {
     /**
      * Discriminator type.
