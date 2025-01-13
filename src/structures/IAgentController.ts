@@ -6,8 +6,8 @@ import {
 } from "@samchon/openapi";
 import { ILlmApplicationOfValidate, ILlmFunctionOfValidate } from "typia";
 
-export type IController = IController.IHttp | IController.IClass;
-export namespace IController {
+export type IAgentController = IAgentController.IHttp | IAgentController.IClass;
+export namespace IAgentController {
   export interface IHttp extends IBase<"http", IHttpLlmApplication<"chatgpt">> {
     connection: IHttpConnection;
     execute?: (props: {
