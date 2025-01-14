@@ -6,3 +6,4 @@ export * from "./structures/IAgentOperationSelection";
 export * from "./structures/IAgentProvider";
 export * from "./structures/IAgentPrompt";
 export * from "./structures/IAgentTokenUsage";
+export * from "./structures/logger/ILogger";
