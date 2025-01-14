@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 
 import { IAgentPrompt } from "./IAgentPrompt";
-import { MetaAgent } from "../MetaAgent";
 import { IAgentOperation } from "./IAgentOperation";
+
 /**
  * A.I. chatbot event.
  */
@@ -18,6 +18,13 @@ export type IAgentEvent =
   | IAgentEvent.IResponse;
 
 export namespace IAgentEvent {
+  export type Source =
+    | "initialize"
+    | "select"
+    | "cancel"
+    | "execute"
+    | "describe";
+
   export type Type = IAgentEvent["type"];
   export type Mapper = {
     initialize: IInitialize;
@@ -171,7 +178,7 @@ export namespace IAgentEvent {
     /**
      * The source agent of the request.
      */
-    source: MetaAgent.Source;
+    source: Source;
 
     /**
      * Request body.
@@ -191,7 +198,7 @@ export namespace IAgentEvent {
     /**
      * The source agent of the response.
      */
-    source: MetaAgent.Source;
+    source: Source;
 
     /**
      * Request body.
