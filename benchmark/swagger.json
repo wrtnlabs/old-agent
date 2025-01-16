@@ -1,0 +1,673 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "benchmark-environment",
+    "description": "It is studio-meta-agent consumer, Input is only scenario",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/musical/exchange": {
+      "post": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Create a new exchange request",
+        "operationId": "create_exchange_request",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Exchange request created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/exchange/{id}": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Get a specific exchange request",
+        "operationId": "get_exchange_request",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Exchange request ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found exchange request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRequest"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exchange request not found"
+          }
+        }
+      }
+    },
+    "/musical/exchanges": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "List all exchange requests",
+        "operationId": "list_exchanges",
+        "responses": {
+          "200": {
+            "description": "List all exchange requests successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExchangeRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/inquiries": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "List all customer inquiries",
+        "operationId": "list_inquiries",
+        "responses": {
+          "200": {
+            "description": "List all customer inquiries successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerInquiry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/inquiry": {
+      "post": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Create a new customer inquiry",
+        "operationId": "create_inquiry",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerInquiry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Customer inquiry created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerInquiry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/inquiry/{id}": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Get a specific customer inquiry",
+        "operationId": "get_inquiry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Customer inquiry ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found customer inquiry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerInquiry"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer inquiry not found"
+          }
+        }
+      }
+    },
+    "/musical/instruments": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "List all musical instruments",
+        "operationId": "list_instruments",
+        "responses": {
+          "200": {
+            "description": "List all instruments successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MusicalInstrument"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/purchases/{member_id}": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Get purchase history by member ID",
+        "operationId": "get_member_purchase_history",
+        "parameters": [
+          {
+            "name": "member_id",
+            "in": "path",
+            "description": "Member ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found purchase history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PurchaseHistory"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No purchase history found"
+          }
+        }
+      }
+    },
+    "/musical/refund": {
+      "post": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Create a new refund request",
+        "operationId": "create_refund_request",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Refund request created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/refund/{id}": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Get a specific refund request",
+        "operationId": "get_refund_request",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Refund request ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found refund request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundRequest"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refund request not found"
+          }
+        }
+      }
+    },
+    "/musical/refunds": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "List all refund requests",
+        "operationId": "list_refunds",
+        "responses": {
+          "200": {
+            "description": "List all refund requests successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RefundRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/repair": {
+      "post": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Create a new repair request",
+        "operationId": "create_repair_request",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepairRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Repair request created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepairRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/musical/repair/{id}": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "Get a specific repair request",
+        "operationId": "get_repair_request",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Repair request ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found repair request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepairRequest"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Repair request not found"
+          }
+        }
+      }
+    },
+    "/musical/repairs": {
+      "get": {
+        "tags": [
+          "Musical Instrument Store API"
+        ],
+        "summary": "List all repair requests",
+        "operationId": "list_repairs",
+        "responses": {
+          "200": {
+            "description": "List all repair requests successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepairRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CustomerInquiry": {
+        "type": "object",
+        "required": [
+          "id",
+          "customer_name",
+          "subject",
+          "message",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InquiryStatus"
+          },
+          "subject": {
+            "type": "string"
+          }
+        }
+      },
+      "ExchangeRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "customer_name",
+          "original_instrument_name",
+          "desired_instrument_name",
+          "reason",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "desired_instrument_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "original_instrument_name": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ExchangeStatus"
+          }
+        }
+      },
+      "ExchangeStatus": {
+        "type": "string",
+        "enum": [
+          "Pending",
+          "Approved",
+          "Rejected",
+          "Completed"
+        ]
+      },
+      "InquiryStatus": {
+        "type": "string",
+        "enum": [
+          "Open",
+          "InProgress",
+          "Resolved"
+        ]
+      },
+      "MusicalInstrument": {
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "price"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "PurchaseHistory": {
+        "type": "object",
+        "required": [
+          "id",
+          "member_id",
+          "instrument_name",
+          "price",
+          "purchase_date",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "instrument_name": {
+            "type": "string"
+          },
+          "member_id": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "purchase_date": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PurchaseStatus"
+          }
+        }
+      },
+      "PurchaseStatus": {
+        "type": "string",
+        "enum": [
+          "Completed",
+          "Cancelled",
+          "Refunded"
+        ]
+      },
+      "RefundRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "customer_name",
+          "instrument_name",
+          "reason",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "instrument_name": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RefundStatus"
+          }
+        }
+      },
+      "RefundStatus": {
+        "type": "string",
+        "enum": [
+          "Pending",
+          "Approved",
+          "Rejected"
+        ]
+      },
+      "RepairRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "customer_name",
+          "instrument_name",
+          "issue_description",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "estimated_cost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "instrument_name": {
+            "type": "string"
+          },
+          "issue_description": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RepairStatus"
+          }
+        }
+      },
+      "RepairStatus": {
+        "type": "string",
+        "enum": [
+          "Received",
+          "Diagnosing",
+          "RepairInProgress",
+          "Ready",
+          "Completed"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Musical Instrument Store API",
+      "description": "Musical Instrument Store Management API"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "benchmark",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "ts-patch install",
+    "start": "ts-node src/index.ts",
+    "debug": "node --inspect -r ts-node/register src/index.ts"
+  },
+  "author": "",
+  "description": "",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "ts-patch": "^3.3.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@samchon/openapi": "^2.4.0",
+    "@wrtn/studio-meta-agent": "^0.25.0",
+    "@wrtnio/schema": "^3.2.1",
+    "typia": "^7.6.0"
+  }
+}
