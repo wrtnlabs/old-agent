@@ -67,6 +67,7 @@ export namespace BenchmarkEnvironment {
       let wrapper: SessionStageContextWrapWrapper;
       return await new Promise(
         async (resolve: (value: FinishEvaluationResult) => void) => {
+          const abortController = new AbortController();
           wrapper = await manager.start({
             llmBackendKind: props.model,
             llmApiKey: props.apiKey,
@@ -105,6 +106,7 @@ export namespace BenchmarkEnvironment {
                   return value.message;
                 }
                 console.log("value", value);
+                abortController.abort();
                 resolve(value.message);
                 return "";
               },
@@ -114,21 +116,11 @@ export namespace BenchmarkEnvironment {
               },
             },
           });
-          await wrapper.launch().catch((e) => {
-            console.error(e);
-            throw e;
-          });
+          await wrapper.launch(abortController.signal);
         }
-      )
-        .catch((e) => {
-          console.error(e);
-          throw e;
-        })
-        .finally(() => {
-          console.log("free");
-          wrapper.free();
-          manager.free();
-        });
+      ).finally(() => {
+        manager.free();
+      });
     };
   export type ClientMessageType =
     | {

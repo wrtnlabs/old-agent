@@ -2,7 +2,7 @@ import { Dialog } from "@wrtn/studio-meta-agent";
 import { BenchmarkEnvironment } from "./environment";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { assertGuard } from "typia";
+import { assert } from "typia";
 
 export interface IScenario {
   platform: {
@@ -63,12 +63,24 @@ export const getClientAgent = (apiKey: string, scenario: IScenario) => {
     while (true) {
       const response = await askToLlm(dialogs);
       const chosen = response.choices[0];
-      const function_called = chosen.message.tool_calls?.at(0);
+      const message = chosen.message
+        .content!.replace("<tool>", "")
+        .replace("</tool>", "");
+      const maybeTranlated = (() => {
+        try {
+          const object = JSON.parse(message);
+          if ("arguments" in object) {
+            return assert<FinishEvaluationResult>(object.arguments);
+          } else {
+            return assert<FinishEvaluationResult>(object);
+          }
+        } catch {
+          return undefined;
+        }
+      })();
 
-      if (function_called?.function.name === "finish_evaluation") {
-        const message = JSON.parse(function_called.function.arguments);
-        assertGuard<FinishEvaluationResult>(message);
-        return { type: "finish", message };
+      if (maybeTranlated) {
+        return { type: "finish", message: maybeTranlated };
       }
 
       yield { type: "ask", message: chosen.message.content! };
