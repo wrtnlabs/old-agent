@@ -57,5 +57,8 @@
       },
       "./package.json": "./package.json"
     }
+  },
+  "dependencies": {
+    "@samchon/openapi": "^2.4.0"
   }
 }
