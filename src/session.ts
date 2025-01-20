@@ -15,13 +15,13 @@ export interface MetaAgentSessionManagerStart {
 }
 
 export interface InitialInformation {
-  email?: string | undefined;
-  username?: string | undefined;
-  job?: string | undefined;
-  timezone?: string | undefined;
-  datetime?: string | undefined;
-  gender?: string | undefined;
-  birth_year?: number | undefined;
+  email?: string;
+  username?: string;
+  job?: string;
+  timezone?: string;
+  datetime?: string;
+  gender?: string;
+  birth_year?: number;
   lang_code?: string;
 }
 
