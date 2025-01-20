@@ -1,8 +1,8 @@
 import { Stage, StageContext } from "../core/stage";
 import { OpenAiFunction } from "../function";
-import { Message } from "../lm-bridge/inputs/message";
-import { LmBridge } from "../lm-bridge/lm_bridge";
-import { Completion } from "../lm-bridge/outputs/completion";
+import { Message } from "../lm_bridge/inputs/message";
+import { LmBridge } from "../lm_bridge/lm_bridge";
+import { Completion } from "../lm_bridge/outputs/completion";
 
 const TEMPERATURE = 0.2;
 const MAX_RETRIES = 5;

@@ -1,5 +1,5 @@
 import { OpenAiFunction, OpenAiFunctionSummary } from "../function";
-import { Connection } from "../lm-bridge/backend";
+import { Connection } from "../lm_bridge/backend";
 
 export interface StageInfo {
   identifier: string;
