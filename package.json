@@ -59,6 +59,7 @@
     }
   },
   "dependencies": {
-    "@samchon/openapi": "^2.4.0"
+    "@samchon/openapi": "^2.4.0",
+    "uuid": "^11.0.5"
   }
 }
