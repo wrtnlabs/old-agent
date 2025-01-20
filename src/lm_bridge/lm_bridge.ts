@@ -22,31 +22,20 @@ const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = {
 export class LmBridge {
   backendFactory: (connection: Connection) => Backend;
 
-  #continueBackend: Backend;
-  #temperature: number;
-  #jsonMode: boolean;
-  #tools: Tool[];
+  // @TODO FIX it
+  public continueBackend: Backend = undefined as unknown as Backend;
+  public temperature: number;
+  public jsonMode: boolean;
+  public tools: Tool[];
 
   constructor(temperature: number, jsonMode: boolean, tools: Tool[]) {
     this.backendFactory = () => {
       // TODO: dummy impl
       throw new Error("Backend not set");
     };
-    this.#temperature = temperature;
-    this.#jsonMode = jsonMode;
-    this.#tools = tools;
-  }
-
-  get temperature(): number {
-    return this.#temperature;
-  }
-
-  get jsonMode(): boolean {
-    return this.#jsonMode;
-  }
-
-  get tools(): Tool[] {
-    return this.#tools;
+    this.temperature = temperature;
+    this.jsonMode = jsonMode;
+    this.tools = tools;
   }
 
   async request(options: LmBridgeRequest): Promise<Completion> {
@@ -58,7 +47,7 @@ export class LmBridge {
       console.debug("attempting run with retries: %i", retries);
 
       try {
-        const output = await this.#runOnce(backend, options);
+        const output = await this.runOnce(backend, options);
         return output;
       } catch (err) {
         if (!(err instanceof BackoffError)) {
@@ -86,7 +75,7 @@ export class LmBridge {
     throw new BackoffError("Too many requests");
   }
 
-  async #runOnce(
+  private async runOnce(
     backend: Backend,
     options: LmBridgeRequest
   ): Promise<Completion> {
@@ -104,10 +93,10 @@ export class LmBridge {
       stageName,
       messages,
       {
-        temperature: this.#temperature,
+        temperature: this.temperature,
         jsonMode: this.jsonMode,
         frequencyPenalty,
-        tools: this.#tools,
+        tools: this.tools,
         toolChoice,
       }
     );
@@ -130,16 +119,16 @@ export class LmBridge {
             },
           ];
 
-          const response = await this.#continueBackend.makeCompletion(
+          const response = await this.continueBackend.makeCompletion(
             connection,
             sessionId,
             stageName,
             continuedMessages,
             {
-              temperature: this.#temperature,
+              temperature: this.temperature,
               jsonMode: this.jsonMode,
               frequencyPenalty,
-              tools: this.#tools,
+              tools: this.tools,
               toolChoice,
             }
           );

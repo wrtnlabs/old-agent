@@ -68,10 +68,10 @@ export class ConnectorFinder
 {
   identifier: string = "connector_finder";
 
-  #lmBridge: LmBridge;
+  private lmBridge: LmBridge;
 
   constructor() {
-    this.#lmBridge = new LmBridge(TEMPERATURE, true, []);
+    this.lmBridge = new LmBridge(TEMPERATURE, true, []);
   }
 
   async execute(
@@ -97,7 +97,7 @@ export class ConnectorFinder
         connectorListPrompt,
         validationPrompt
       );
-      const response: Completion = await this.#lmBridge.request({
+      const response: Completion = await this.lmBridge.request({
         connection: context.llmConnection,
         sessionId: context.sessionId,
         stageName: this.identifier,

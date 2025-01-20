@@ -33,13 +33,12 @@ export interface PlatformInfo {
 }
 
 export class MetaAgentSessionManager {
-  constructor(options: MetaAgentSessionManagerInit) {
-    // TODO
-  }
+  // constructor(options: MetaAgentSessionManagerInit) {
+  //   // TODO
+  // }
 
-  async start(
-    options: MetaAgentSessionManagerStart
-  ): Promise<MetaAgentSession> {
+  async start() // options: MetaAgentSessionManagerStart
+  : Promise<MetaAgentSession> {
     // TODO
     return new MetaAgentSession();
   }
@@ -48,7 +47,7 @@ export class MetaAgentSessionManager {
 export class MetaAgentSession {
   constructor() {}
 
-  async launch(signal?: AbortSignal): Promise<void> {}
+  // async launch(signal?: AbortSignal): Promise<void> {}
 
   async abort(): Promise<void> {}
 }
