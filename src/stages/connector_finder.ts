@@ -1,5 +1,5 @@
 import { Stage, StageContext } from "../core/stage";
-import { OpenAiFunction, OpenAiFunctionSummary } from "../function";
+import { OpenAiFunction } from "../function";
 import { Message } from "../lm-bridge/inputs/message";
 import { LmBridge } from "../lm-bridge/lm_bridge";
 import { Completion } from "../lm-bridge/outputs/completion";
@@ -18,8 +18,8 @@ export interface ConnectorFinderOutput {
 
 function buildMessages(
   systemPrompt: string,
-  input: ConnectorFinderInput,
-  connectorList: OpenAiFunctionSummary[],
+  inputPrompt: string,
+  connectorListPrompt: string,
   validationPrompt?: ValidationFailure
 ): Message[] {
   const messages: Message[] = [
@@ -29,11 +29,11 @@ function buildMessages(
     },
     {
       role: "system",
-      content: { type: "text", text: connectorList },
+      content: { type: "text", text: connectorListPrompt },
     },
     {
       role: "user",
-      content: { type: "text", text: input },
+      content: { type: "text", text: inputPrompt },
     },
   ];
   if (validationPrompt != null) {
@@ -79,7 +79,9 @@ export class ConnectorFinder
     context: StageContext
   ): Promise<ConnectorFinderOutput> {
     const systemPrompt = await context.getPrompt("v2-connector-finder");
+    const inputPrompt = `<request>\n${JSON.stringify(input)}\n</request>`;
     const connectorList = await context.allFunctions();
+    const connectorListPrompt = `<connector-list>\n${JSON.stringify(connectorList)}</connector-list>`;
     let validationPrompt: ValidationFailure | undefined;
 
     outer: for (let retryIndex = 0; retryIndex < MAX_RETRIES; retryIndex++) {
@@ -91,8 +93,8 @@ export class ConnectorFinder
 
       const messages = buildMessages(
         systemPrompt,
-        input,
-        connectorList,
+        inputPrompt,
+        connectorListPrompt,
         validationPrompt
       );
       const response: Completion = await this.#lmBridge.request({
