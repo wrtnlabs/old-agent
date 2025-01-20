@@ -20,12 +20,18 @@ const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = {
 };
 
 export class LmBridge {
+  backendFactory: (connection: Connection) => Backend;
+
   #continueBackend: Backend;
   #temperature: number;
   #jsonMode: boolean;
   #tools: Tool[];
 
   constructor(temperature: number, jsonMode: boolean, tools: Tool[]) {
+    this.backendFactory = () => {
+      // TODO: dummy impl
+      throw new Error("Backend not set");
+    };
     this.#temperature = temperature;
     this.#jsonMode = jsonMode;
     this.#tools = tools;
@@ -45,14 +51,14 @@ export class LmBridge {
 
   async request(options: LmBridgeRequest): Promise<Completion> {
     const { connection, backoffStrategy = DEFAULT_BACKOFF_STRATEGY } = options;
-    const backend = populateBackend(connection);
+    const backend = this.backendFactory(connection);
     console.debug("backoff strategy: %o", backoffStrategy);
 
     for (let retries = 0; retries < backoffStrategy.maxRetries; retries++) {
       console.debug("attempting run with retries: %i", retries);
 
       try {
-        const output = await this.#runOnce(this.#continueBackend, options);
+        const output = await this.#runOnce(backend, options);
         return output;
       } catch (err) {
         if (!(err instanceof BackoffError)) {
