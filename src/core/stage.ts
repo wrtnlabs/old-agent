@@ -1,5 +1,5 @@
 import { OpenAiFunction, OpenAiFunctionSummary } from "../function";
-import { LlmConnection } from "../lm-bridge/lm_bridge";
+import { Connection } from "../lm-bridge/backend";
 
 export interface StageInfo {
   identifier: string;
@@ -10,7 +10,7 @@ export interface Stage<I, O> extends StageInfo {
 }
 
 export interface StageContext {
-  llmConnection: LlmConnection;
+  llmConnection: Connection;
   sessionId: string;
   langCode: string;
   getPrompt(name: string, context?: Record<string, unknown>): Promise<string>;

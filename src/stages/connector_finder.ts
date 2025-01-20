@@ -1,6 +1,7 @@
 import { Stage, StageContext } from "../core/stage";
 import { OpenAiFunction, OpenAiFunctionSummary } from "../function";
 import { Message } from "../lm-bridge/inputs/message";
+import { LmBridge } from "../lm-bridge/lm_bridge";
 import { Completion } from "../lm-bridge/outputs/completion";
 
 const TEMPERATURE = 0.2;
@@ -67,6 +68,12 @@ export class ConnectorFinder
 {
   identifier: string = "connector_finder";
 
+  #lmBridge: LmBridge;
+
+  constructor() {
+    this.#lmBridge = new LmBridge(TEMPERATURE, true, []);
+  }
+
   async execute(
     input: ConnectorFinderInput,
     context: StageContext
@@ -88,7 +95,7 @@ export class ConnectorFinder
         connectorList,
         validationPrompt
       );
-      const response: Completion = await this.llm.request({
+      const response: Completion = await this.#lmBridge.request({
         connection: context.llmConnection,
         sessionId: context.sessionId,
         stageName: this.identifier,
