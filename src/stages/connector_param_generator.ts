@@ -195,7 +195,6 @@ export class ConnectorParamGenerator
           continue;
         }
 
-        // TODO: collect errors
         const errors = (validator.errors ?? [])
           .map((err) => `- ${err.instancePath}: ${err.message}`)
           .join("\n");
