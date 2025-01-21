@@ -1,11 +1,17 @@
 import { OpenApi } from "@samchon/openapi";
-import { HttpOpenAi, IOpenAiSchema, OpenAiTypeChecker } from "@wrtnio/schema";
+import {
+  HttpOpenAi,
+  IHttpOpenAiApplication,
+  IOpenAiSchema,
+  OpenAiTypeChecker,
+} from "@wrtnio/schema";
 import {
   Dialog,
   MetaAgentSessionManager,
   Prerequisite,
   SessionStageContextWrapWrapper,
 } from "@wrtn/studio-meta-agent";
+import {} from "@wrtn/studio-meta-agent";
 import { FinishEvaluationResult } from "./client.agent";
 
 export namespace BenchmarkEnvironment {
@@ -28,27 +34,13 @@ export namespace BenchmarkEnvironment {
 
     const manager = new MetaAgentSessionManager({
       xFeatureId: "benchmark",
-      delegate: {
-        findFunction: async (_, name) => {
-          return (
-            openaiPositional.functions.find((f) => f.name === name) ?? null
-          );
-        },
-        queryFunctions: async () => {
-          return openaiPositional.functions.map((f) => ({
-            method: f.method,
-            path: f.path,
-            description: f.description ?? null,
-            prerequisites: f.parameters.flatMap(extractPrerequisites),
-          }));
-        },
-      },
     });
-    return getAgentContext(manager);
+    return getAgentContext(manager)(openaiPositional);
   };
 
   const getAgentContext =
     (manager: MetaAgentSessionManager) =>
+    (openaiPositional: IHttpOpenAiApplication) =>
     (props: {
       model: "openai";
       apiKey: string;
@@ -77,14 +69,21 @@ export namespace BenchmarkEnvironment {
             },
             initialInformation: props.initialInformation,
             dialogs,
-            sessionStorage: {
-              function_call_results: [],
-            },
             delegate: {
+              findFunction: async (_, name) => {
+                return openaiPositional.functions.find((f) => f.name === name);
+              },
+              queryFunctions: async (_q) => {
+                return openaiPositional.functions.map((f) => ({
+                  method: f.method,
+                  path: f.path,
+                  description: f.description,
+                  prerequisites: f.parameters.flatMap(extractPrerequisites),
+                }));
+              },
               onCommit: async () => {},
               onError: async () => {},
               onStatistics: async () => {},
-              onUpdateSessionStorage: async () => {},
               onMessage: async (event) => {
                 console.log("onMessage", event);
                 if (
@@ -118,9 +117,7 @@ export namespace BenchmarkEnvironment {
           });
           await wrapper.launch(abortController.signal);
         }
-      ).finally(() => {
-        manager.free();
-      });
+      );
     };
   export type ClientMessageType =
     | {

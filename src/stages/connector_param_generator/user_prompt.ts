@@ -104,8 +104,8 @@ For any strings in the JSON of your response, correctly escape strings, especial
 }
 
 function stringifyConnector(
-  connector: OpenAiFunction,
-  includeReturnType: boolean
+  _connector: OpenAiFunction,
+  _includeReturnType: boolean
 ): string {
   throw new Error("TODO");
 }

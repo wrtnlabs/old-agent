@@ -1,7 +1,10 @@
 import { Dialog } from "./chat_history";
+import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
 
-export interface MetaAgentSessionManagerInit {}
+export interface MetaAgentSessionManagerInit {
+  signal: AbortSignal;
+}
 
 export interface MetaAgentSessionManagerStart {
   host?: string;
@@ -33,14 +36,16 @@ export interface PlatformInfo {
 }
 
 export class MetaAgentSessionManager {
-  // constructor(options: MetaAgentSessionManagerInit) {
-  //   // TODO
-  // }
+  constructor(options: MetaAgentSessionManagerInit) {
+    options;
+    throw new Error("Not implemented");
+  }
 
-  async start() // options: MetaAgentSessionManagerStart
-  : Promise<MetaAgentSession> {
-    // TODO
-    return new MetaAgentSession();
+  async start(
+    options: MetaAgentSessionManagerStart
+  ): Promise<SessionStageContextWrapWrapper> {
+    options;
+    return new SessionStageContextWrapWrapper();
   }
 }
 
@@ -50,4 +55,33 @@ export class MetaAgentSession {
   // async launch(signal?: AbortSignal): Promise<void> {}
 
   async abort(): Promise<void> {}
+}
+
+export class SessionStageContextWrapWrapper {
+  free(): void {
+    return;
+  }
+  /**
+   * @param {AbortSignal | undefined} [signal]
+   * @returns {Promise<void>}
+   */
+  launch(signal?: AbortSignal): Promise<void> {
+    signal;
+    return Promise.resolve();
+  }
+  /**
+   * @returns {CostDetail}
+   */
+  compute_cost(): CostDetail {
+    return { total: { cost: 0, inputTokens: 0, outputTokens: 0 } };
+  }
+  /**
+   * Abort the current speech.
+   *
+   * This will cause the read event to be emitted to resume from the user input.
+   * @returns {Promise<void>}
+   */
+  abort(): Promise<void> {
+    return Promise.resolve();
+  }
 }

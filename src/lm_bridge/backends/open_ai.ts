@@ -25,8 +25,8 @@ export class OpenAi implements Backend {
 
   async makeCompletion(
     connection: Connection,
-    sessionId: string,
-    stageName: string,
+    _sessionId: string,
+    _stageName: string,
     messages: Message[],
     options: CompletionOptions
   ): Promise<Completion> {
