@@ -6,6 +6,7 @@ import { Message } from "../lm_bridge/inputs/message";
 import { LmBridge } from "../lm_bridge/lm_bridge";
 import { buildUserPrompt } from "./connector_param_generator/user_prompt";
 import { buildLangCodePrompt } from "./lang_code_prompt";
+import { buildUserContextPrompt } from './user_context_prompt';
 
 const TEMPERATURE = 0.2;
 const FREQUENCY_PENALTY = 0.1;

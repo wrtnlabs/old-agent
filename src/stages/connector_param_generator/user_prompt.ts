@@ -102,3 +102,10 @@ For any strings in the JSON of your response, correctly escape strings, especial
 - You may see "iri" format sometimes. This is a equivalent to "uri" format, but it allows non-url-encoded characters such as Korean, Japanese, special characters, and so on.
 </useful_tips>`;
 }
+
+function stringifyConnector(
+  connector: OpenAiFunction,
+  includeReturnType: boolean
+): string {
+  throw new Error("TODO");
+}
