@@ -1,5 +1,6 @@
 export interface OpenAiFunction extends OpenAiFunctionSummary {
   // TODO
+  parameters: unknown[];
 }
 
 export interface OpenAiFunctionSummary {
