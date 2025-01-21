@@ -1,17 +1,11 @@
-export interface OpenAiFunction extends OpenAiFunctionSummary {
-  // TODO
-  parameters: unknown[];
-}
+import {
+  IHttpOpenAiFunction,
+  ISwaggerSchemaCommonPlugin,
+} from "@wrtnio/schema";
 
-export interface OpenAiFunctionSummary {
-  method: string;
-  path: string;
-  description?: string;
-  prerequisites?: Prerequisite[];
-}
+export interface OpenAiFunction extends IHttpOpenAiFunction {}
 
-export interface Prerequisite {
-  method: string;
-  path: string;
-  jmesPath: string;
+export interface OpenAiFunctionSummary
+  extends Pick<OpenAiFunction, "method" | "name" | "description"> {
+  prerequisites?: ISwaggerSchemaCommonPlugin.IPrerequisite[];
 }
