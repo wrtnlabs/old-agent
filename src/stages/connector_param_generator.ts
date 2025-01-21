@@ -1,3 +1,4 @@
+import Ajv from "ajv";
 import { Dialog } from "../chat_history";
 import { Stage, StageContext } from "../core/stage";
 import { OpenAiFunction } from "../function";
@@ -77,9 +78,11 @@ export class ConnectorParamGenerator
   identifier: string = "connector_param_generator";
 
   private lmBridge: LmBridge;
+  private ajv: Ajv;
 
   constructor() {
     this.lmBridge = new LmBridge(TEMPERATURE, true, []);
+    this.ajv = new Ajv();
   }
 
   async execute(
@@ -185,13 +188,16 @@ export class ConnectorParamGenerator
       }
 
       for (const [index, argument] of output.arguments.entries()) {
-        const schema = input.connector.parameters[index];
-        const errors = validateValue(schema, argument);
-        if (errors?.length <= 0) {
+        const schema = input.connector.parameters[index]!;
+        const validator = this.ajv.compile(schema);
+        if (validator(argument)) {
           continue;
         }
 
         // TODO: collect errors
+        const errors = (validator.errors ?? [])
+          .map((err) => `- ${err.instancePath}: ${err.message}`)
+          .join("\n");
 
         console.warn(
           "connector param generator response `arguments` validation failed; retrying; errors=%s",
