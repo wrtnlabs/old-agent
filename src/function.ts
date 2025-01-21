@@ -6,6 +6,6 @@ import {
 export interface OpenAiFunction extends IHttpOpenAiFunction {}
 
 export interface OpenAiFunctionSummary
-  extends Pick<OpenAiFunction, "method" | "name" | "description"> {
+  extends Pick<OpenAiFunction, "method" | "path" | "description"> {
   prerequisites?: ISwaggerSchemaCommonPlugin.IPrerequisite[];
 }

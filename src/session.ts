@@ -2,9 +2,7 @@ import { Dialog } from "./chat_history";
 import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
 
-export interface MetaAgentSessionManagerInit {
-  signal: AbortSignal;
-}
+export interface MetaAgentSessionManagerInit {}
 
 export interface MetaAgentSessionManagerStart {
   host?: string;

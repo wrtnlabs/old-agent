@@ -3,15 +3,14 @@ import {
   HttpOpenAi,
   IHttpOpenAiApplication,
   IOpenAiSchema,
+  ISwaggerSchemaCommonPlugin,
   OpenAiTypeChecker,
 } from "@wrtnio/schema";
 import {
   Dialog,
   MetaAgentSessionManager,
-  Prerequisite,
   SessionStageContextWrapWrapper,
 } from "@wrtn/studio-meta-agent";
-import {} from "@wrtn/studio-meta-agent";
 import { FinishEvaluationResult } from "./client.agent";
 
 export namespace BenchmarkEnvironment {
@@ -32,9 +31,7 @@ export namespace BenchmarkEnvironment {
     //     parameters: f.separated?.llm.map((p) => p.schema),
     //   }));
 
-    const manager = new MetaAgentSessionManager({
-      xFeatureId: "benchmark",
-    });
+    const manager = new MetaAgentSessionManager({});
     return getAgentContext(manager)(openaiPositional);
   };
 
@@ -141,15 +138,15 @@ export namespace BenchmarkEnvironment {
   };
 }
 
-const extractPrerequisites = (schema: IOpenAiSchema): Prerequisite[] => {
-  const result: Prerequisite[] = [];
+const extractPrerequisites = (
+  schema: IOpenAiSchema
+): ISwaggerSchemaCommonPlugin.IPrerequisite[] => {
+  const result: ISwaggerSchemaCommonPlugin.IPrerequisite[] = [];
 
   OpenAiTypeChecker.visit(schema, (schema) => {
     const prerequisite = schema["x-wrtn-prerequisite"];
     if (prerequisite && "jmesPath" in prerequisite) {
-      result.push({
-        prerequisite,
-      });
+      result.push(prerequisite);
     }
   });
 
