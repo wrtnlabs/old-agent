@@ -22,7 +22,7 @@ export const dialogToInputMessage = (dialog: Dialog): Message => {
     ...(dialog.speaker.type === "assistant"
       ? { name: dialog.speaker.name }
       : {}),
-    role: dialog.speaker.type === "assistant" ? "assistant" : "user",
+    role: dialog.speaker.type,
     content: dialogMessageToInputMessage(dialog.message),
   };
 };
