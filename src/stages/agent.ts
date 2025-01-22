@@ -239,7 +239,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         role: "system",
         content: {
           type: "text",
-          text: JSON.stringify(ctx.userContext),
+          text: buildUserContextPrompt(ctx.userContext),
         },
       },
       {
