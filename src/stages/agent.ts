@@ -1,9 +1,10 @@
 import { Dialog, dialogToInputMessage } from "../chat_history";
-import { Stage, StageContext } from "../core/stage";
+import { Stage, StageContext, StageError } from "../core/stage";
 import { OpenAiFunction } from "../core/connector";
 import { LmBridge } from "../lm_bridge/lm_bridge";
 import {
   Completion,
+  CompletionMessage,
   CompletionTextMessage,
   CompletionToolUseMessage,
 } from "../lm_bridge/outputs/completion";
@@ -12,6 +13,7 @@ import { TOOLS } from "./agent/tools";
 import { buildLangCodePrompt } from "./lang_code_prompt";
 import { Message } from "../lm_bridge/inputs/message";
 import { validate } from "typia";
+import { buildUserContextPrompt } from "./user_context_prompt";
 
 const TEMPERATURE = 0.2;
 const FREQUENCY_PENALTY = 0.0;
@@ -124,10 +126,8 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         validationFailure = {
           assistantResponse: {
             role: "assistant",
-            content: {
-              type: "text",
-              text: "<empty response>",
-            },
+            type: "text",
+            text: "<empty response>",
           },
           feedback: "you did not provide a valid response",
         };
@@ -140,10 +140,8 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         validationFailure = {
           assistantResponse: {
             role: "assistant",
-            content: {
-              type: "text",
-              text: "<non-text response>",
-            },
+            type: "text",
+            text: "<non-text response>",
           },
           feedback: "expected text message; got something else",
         };
@@ -155,10 +153,9 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         validationFailure = {
           assistantResponse: {
             role: "assistant",
-            content: {
-              type: "text",
-              text: message.text,
-            },
+
+            type: "text",
+            text: message.text,
           },
           feedback:
             "you didn't escape the response correctly; please correctly escape all strings in the response",
@@ -172,10 +169,8 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         validationFailure = {
           assistantResponse: {
             role: "assistant",
-            content: {
-              type: "text",
-              text: message.text,
-            },
+            type: "text",
+            text: message.text,
           },
           feedback: `"your response is invalid JSON: ${err}"`,
         };
@@ -213,7 +208,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     input: Agent.Input,
     prompt: AgentPrompt,
     validationFailure: null | {
-      assistantResponse: Message;
+      assistantResponse: CompletionMessage;
       feedback: string;
     } = null
   ): Message[] {
@@ -267,19 +262,48 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
 
     const validationPrompt = (
       validationFailure
-        ? [
-            {
-              role: "assistant",
-              content: validationFailure.assistantResponse.content,
-            },
-            {
-              role: "user",
-              content: {
-                type: "text",
-                text: validationFailure.feedback,
-              },
-            },
-          ]
+        ? (() => {
+            switch (validationFailure.assistantResponse.type) {
+              case "text":
+                return [
+                  {
+                    role: "assistant",
+                    content: {
+                      type: "text",
+                      text: validationFailure.assistantResponse.text,
+                    },
+                  },
+                  {
+                    role: "user",
+                    content: {
+                      type: "text",
+                      text: validationFailure.feedback,
+                    },
+                  },
+                ] satisfies Message[];
+              case "tool_use":
+                return [
+                  {
+                    role: "assistant",
+                    content: {
+                      type: "tool_use",
+                      toolUseId: validationFailure.assistantResponse.toolUseId,
+                      name: validationFailure.assistantResponse.toolName,
+                      arguments: validationFailure.assistantResponse.arguments,
+                    },
+                  },
+                  {
+                    role: "user",
+                    content: {
+                      type: "tool_result",
+                      toolUseId: validationFailure.assistantResponse.toolUseId,
+                      isError: true,
+                      content: validationFailure.feedback,
+                    },
+                  },
+                ] satisfies Message[];
+            }
+          })()
         : []
     ) satisfies Message[];
 
