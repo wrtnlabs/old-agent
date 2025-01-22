@@ -1,4 +1,4 @@
-import { Stage, StageContext } from "../core/stage";
+import { Stage, StageContext, StageError } from "../core/stage";
 import { OpenAiFunction } from "../function";
 import { Message } from "../lm_bridge/inputs/message";
 import { LmBridge } from "../lm_bridge/lm_bridge";
@@ -168,7 +168,7 @@ export class ConnectorFinder
       }
       return { connectors };
     }
-    throw new Error(
+    throw new StageError(
       `LLM returned invalid response: ${validationPrompt?.validationPrompt ?? ""}`
     );
   }

@@ -1,13 +1,13 @@
 import Ajv from "ajv";
 import { Dialog } from "../chat_history";
-import { Stage, StageContext } from "../core/stage";
+import { Stage, StageContext, StageError } from "../core/stage";
 import { OpenAiFunction } from "../function";
 import { Message } from "../lm_bridge/inputs/message";
 import { LmBridge } from "../lm_bridge/lm_bridge";
 import { buildUserPrompt } from "./connector_param_generator/user_prompt";
 import { buildLangCodePrompt } from "./lang_code_prompt";
-import { buildUserContextPrompt } from './user_context_prompt';
-import { JsonValue } from '../core/types';
+import { buildUserContextPrompt } from "./user_context_prompt";
+import { JsonValue } from "../core/types";
 
 const TEMPERATURE = 0.2;
 const FREQUENCY_PENALTY = 0.1;
@@ -149,19 +149,19 @@ export class ConnectorParamGenerator
       try {
         output = JSON.parse(message.text);
         if (typeof output !== "object" || output == null) {
-          throw new Error("expected an object");
+          throw new TypeError("expected an object");
         }
         if (!("thought" in output)) {
-          throw new Error("expected 'thought' key in object");
+          throw new TypeError("expected 'thought' key in object");
         }
         if (!("arguments" in output)) {
-          throw new Error("expected 'arguments' key in object");
+          throw new TypeError("expected 'arguments' key in object");
         }
         if (typeof output.thought !== "string") {
-          throw new Error("expected 'thought' to be a string");
+          throw new TypeError("expected 'thought' to be a string");
         }
         if (!Array.isArray(output.arguments)) {
-          throw new Error("expected 'arguments' to be an array");
+          throw new TypeError("expected 'arguments' to be an array");
         }
       } catch (err) {
         console.warn(
@@ -218,7 +218,7 @@ export class ConnectorParamGenerator
       };
     }
 
-    throw new Error(
+    throw new StageError(
       `LLM returned invalid response: ${validationPrompt?.validationPrompt ?? ""}`
     );
   }
