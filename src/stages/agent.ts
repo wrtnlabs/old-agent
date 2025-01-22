@@ -284,8 +284,8 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     ) satisfies Message[];
 
     return [
-      ...baseMessage,
       ...prevMessages,
+      ...baseMessage,
       ...queryMessage,
       ...validationPrompt,
     ];
