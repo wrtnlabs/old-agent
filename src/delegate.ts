@@ -3,6 +3,7 @@ import {
   ConnectorCallEvent,
   MessageEvent,
   ReadEvent,
+  RollbackEvent,
   StatisticsEvent,
 } from "./event";
 import { OpenAiFunction, OpenAiFunctionSummary } from "./function";
@@ -12,6 +13,7 @@ export interface MetaAgentSessionDelegate {
   onRead?(event: ReadEvent): Promise<string>;
   onMessage?(event: MessageEvent): Promise<void>;
   onCommit?(event: CommitEvent): Promise<void>;
+  onRollback?(event: RollbackEvent): Promise<void>;
   onConnectorCall?(event: ConnectorCallEvent): Promise<unknown>;
   onStatistics?(event: StatisticsEvent): void;
 

@@ -1,5 +1,5 @@
 import { Dialog } from "./chat_history";
-import { OpenAiFunction } from './function';
+import { OpenAiFunction } from "./function";
 
 /**
  * Represents a read event.
@@ -24,6 +24,8 @@ export interface MessageEvent {
 }
 
 export interface CommitEvent {}
+
+export interface RollbackEvent {}
 
 export interface RollbackEvent {}
 
