@@ -1,4 +1,5 @@
 import { Dialog } from "./chat_history";
+import { JsonValue } from './core/types';
 import { OpenAiFunction } from "./function";
 
 /**
@@ -31,7 +32,7 @@ export interface RollbackEvent {}
 
 export interface ConnectorCallEvent {
   function: OpenAiFunction;
-  args: unknown[];
+  args: JsonValue[];
 }
 
 export interface StatisticsEvent {

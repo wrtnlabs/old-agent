@@ -1,3 +1,5 @@
+import { JsonValue } from "./core/types";
+
 export type AssistantName = string;
 
 /**
@@ -30,7 +32,7 @@ export interface DialogToolUseMessage {
   type: "tool_use";
   tool_use_id: string;
   name: string;
-  args: unknown;
+  args: JsonValue;
 }
 
 export interface DialogToolResultMessage {
@@ -40,7 +42,7 @@ export interface DialogToolResultMessage {
   content: unknown;
 }
 
-export type DialogJsonMessage = { type: "json" } & Record<string, unknown>;
+export type DialogJsonMessage = { type: "json" } & JsonValue;
 
 export type DialogResultMessage = { type: "result" } & (
   | { Ok: DialogMessage }

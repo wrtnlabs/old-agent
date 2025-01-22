@@ -7,6 +7,7 @@ import { LmBridge } from "../lm_bridge/lm_bridge";
 import { buildUserPrompt } from "./connector_param_generator/user_prompt";
 import { buildLangCodePrompt } from "./lang_code_prompt";
 import { buildUserContextPrompt } from './user_context_prompt';
+import { JsonValue } from '../core/types';
 
 const TEMPERATURE = 0.2;
 const FREQUENCY_PENALTY = 0.1;
@@ -21,7 +22,7 @@ export namespace ConnectorParamGenerator {
 
   export interface Output {
     thought: string;
-    arguments: unknown[];
+    arguments: JsonValue[];
   }
 }
 

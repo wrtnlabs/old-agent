@@ -1,3 +1,4 @@
+import { JsonValue } from "../../core/types";
 import { Role } from "../common_types";
 import { Usage } from "./usage";
 
@@ -26,5 +27,5 @@ export interface CompletionToolUseMessage
   extends CompletionBaseMessage<"tool_use"> {
   toolUseId: string;
   toolName: string;
-  arguments: unknown;
+  arguments: JsonValue;
 }

@@ -1,3 +1,4 @@
+import { JsonValue } from "./core/types";
 import {
   CommitEvent,
   ConnectorCallEvent,
@@ -14,7 +15,7 @@ export interface MetaAgentSessionDelegate {
   onMessage?(event: MessageEvent): Promise<void>;
   onCommit?(event: CommitEvent): Promise<void>;
   onRollback?(event: RollbackEvent): Promise<void>;
-  onConnectorCall?(event: ConnectorCallEvent): Promise<unknown>;
+  onConnectorCall?(event: ConnectorCallEvent): Promise<JsonValue>;
   onStatistics?(event: StatisticsEvent): void;
 
   findFunction(
