@@ -104,7 +104,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     const MAX_RETRY = 5;
 
     let validationFailure: null | {
-      assistantResponse: Message;
+      assistantResponse: CompletionMessage;
       feedback: string;
     } = null;
 
