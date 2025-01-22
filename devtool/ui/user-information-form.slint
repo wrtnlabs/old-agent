@@ -1,0 +1,81 @@
+import { GridBox, LineEdit } from "std-widgets.slint";
+
+export struct UserInformation {
+    email: string,
+    username: string,
+    job: string,
+    timezone: string,
+    lang_code: string,
+}
+
+export component UserInformationForm inherits GridBox {
+    in property <bool> enabled: true;
+    in-out property <UserInformation> model: {
+        email: "test@test.com",
+        username: "Test User",
+        job: "Tester",
+        timezone: "Asia/Seoul",
+        lang_code: "ko",
+    };
+
+    Row {
+        Text {
+            stroke-style: TextStrokeStyle.center;
+            text: "Email";
+            vertical-alignment: center;
+        }
+
+        LineEdit {
+            text: root.model.email;
+            enabled: root.enabled;
+        }
+    }
+
+    Row {
+        Text {
+            text: "Name";
+            vertical-alignment: center;
+        }
+
+        LineEdit {
+            text: root.model.username;
+            enabled: root.enabled;
+        }
+    }
+
+    Row {
+        Text {
+            text: "Job";
+            vertical-alignment: center;
+        }
+
+        LineEdit {
+            text: root.model.job;
+            enabled: root.enabled;
+        }
+    }
+
+    Row {
+        Text {
+            text: "Timezone";
+            vertical-alignment: center;
+        }
+
+        LineEdit {
+            text: root.model.timezone;
+            enabled: root.enabled;
+        }
+    }
+
+    Row {
+        Text {
+            text: "Language";
+            vertical-alignment: center;
+        }
+
+        LineEdit {
+            text: root.model.lang_code;
+            enabled: root.enabled;
+        }
+    }
+}
