@@ -1,5 +1,5 @@
 import { Stage, StageContext, StageError } from "../core/stage";
-import { OpenAiFunction } from "../function";
+import { OpenAiFunction } from "../core/connector";
 import { Message } from "../lm_bridge/inputs/message";
 import { LmBridge } from "../lm_bridge/lm_bridge";
 import { Completion } from "../lm_bridge/outputs/completion";

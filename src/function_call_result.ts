@@ -1,5 +1,5 @@
 import { JsonValue } from "./core/types";
-import { OpenAiFunction, stringifyConnectorKey } from "./function";
+import { OpenAiFunction, stringifyConnectorKey } from "./core/connector";
 
 export interface FunctionCallResult {
   id: string;

@@ -1,7 +1,7 @@
 import Ajv from "ajv";
 import { Dialog } from "../chat_history";
 import { Stage, StageContext, StageError } from "../core/stage";
-import { OpenAiFunction } from "../function";
+import { OpenAiFunction } from "../core/connector";
 import { Message } from "../lm_bridge/inputs/message";
 import { LmBridge } from "../lm_bridge/lm_bridge";
 import { buildUserPrompt } from "./connector_param_generator/user_prompt";

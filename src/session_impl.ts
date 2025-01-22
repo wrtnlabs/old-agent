@@ -3,7 +3,7 @@ import { ChatHistory, Speaker } from "./chat_history";
 import { StageContext, StageError } from "./core/stage";
 import { MetaAgentSessionDelegate } from "./delegate";
 import { DialogEmitter } from "./dialog_emitter";
-import { OpenAiFunctionSummary, OpenAiFunction } from "./function";
+import { OpenAiFunctionSummary, OpenAiFunction } from "./core/connector";
 import {
   buildDetailedFunctionCallResult,
   FunctionCallResult,

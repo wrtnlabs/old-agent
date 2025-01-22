@@ -1,5 +1,5 @@
 import { Dialog } from "../../chat_history";
-import { OpenAiFunction, stringifyConnector } from "../../function";
+import { OpenAiFunction, stringifyConnector } from "../../core/connector";
 import { collectHistoryPrompt } from "../collect_history_prompt";
 
 export function buildUserPrompt(

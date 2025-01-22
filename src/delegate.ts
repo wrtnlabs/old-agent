@@ -7,7 +7,7 @@ import {
   RollbackEvent,
   StatisticsEvent,
 } from "./event";
-import { OpenAiFunction, OpenAiFunctionSummary } from "./function";
+import { OpenAiFunction, OpenAiFunctionSummary } from "./core/connector";
 
 export interface MetaAgentSessionDelegate {
   onError?(event: Error): void;

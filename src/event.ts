@@ -1,6 +1,6 @@
 import { Dialog } from "./chat_history";
-import { JsonValue } from './core/types';
-import { OpenAiFunction } from "./function";
+import { JsonValue } from "./core/types";
+import { OpenAiFunction } from "./core/connector";
 
 /**
  * Represents a read event.

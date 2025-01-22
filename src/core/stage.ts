@@ -1,4 +1,4 @@
-import { OpenAiFunction, OpenAiFunctionSummary } from "../function";
+import { OpenAiFunction, OpenAiFunctionSummary } from "./connector";
 import { Connection } from "../lm_bridge/backend";
 import { InitialInformation } from "../session";
 

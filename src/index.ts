@@ -1,5 +1,5 @@
 export * from "./session";
-export * from "./function";
+export * from "./core/connector";
 export * from "./event";
 export * from "./delegate";
 export * from "./chat_history";
