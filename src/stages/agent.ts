@@ -24,19 +24,31 @@ export namespace Agent {
 }
 
 export type AgentAction =
-  | { type: "chat"; message: string }
-  | {
-      type: "lookup_functions";
-      functionCall: CompletionToolUseMessage;
-      thoughts: string;
-      queries: { query: string; specifications?: string }[];
-    }
-  | {
-      type: "run_functions";
-      functionCall: CompletionToolUseMessage;
-      thoughts: string;
-      items: { purpose: string; function: OpenAiFunction }[];
-    };
+  | AgentChatAction
+  | AgentLookupFunctionsAction
+  | AgentRunFunctionsAction;
+
+export interface AgentBaseAction<T extends string> {
+  type: T;
+}
+
+export interface AgentChatAction extends AgentBaseAction<"chat"> {
+  message: string;
+}
+
+export interface AgentLookupFunctionsAction
+  extends AgentBaseAction<"lookup_functions"> {
+  functionCall: CompletionToolUseMessage;
+  thoughts: string;
+  queries: { query: string; specifications?: string }[];
+}
+
+export interface AgentRunFunctionsAction
+  extends AgentBaseAction<"run_functions"> {
+  functionCall: CompletionToolUseMessage;
+  thoughts: string;
+  items: { purpose: string; function: OpenAiFunction }[];
+}
 
 export class Agent implements Stage<Agent.Input, Agent.Output> {
   identifier: string = "agent";

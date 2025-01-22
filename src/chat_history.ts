@@ -64,6 +64,10 @@ export class ChatHistory {
     this.dialogs.push(dialog);
   }
 
+  lastDialog(): Dialog | undefined {
+    return this.dialogs.at(-1);
+  }
+
   [Symbol.iterator](): IteratorObject<Dialog> {
     return this.dialogs.values();
   }
