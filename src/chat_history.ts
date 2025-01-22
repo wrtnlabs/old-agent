@@ -1,4 +1,5 @@
 import { JsonValue } from "./core/types";
+import { Message, MessageContent } from "./lm_bridge/inputs/message";
 
 export type AssistantName = string;
 
@@ -16,6 +17,44 @@ export interface Dialog {
   readonly message: DialogMessage;
 }
 
+export const dialogToInputMessage = (dialog: Dialog): Message => {
+  return {
+    ...(dialog.speaker.type === "assistant"
+      ? { name: dialog.speaker.name }
+      : {}),
+    role: dialog.speaker.type,
+    content: dialogMessageToInputMessage(dialog.message),
+  };
+};
+
+const dialogMessageToInputMessage = (
+  message: DialogMessage
+): MessageContent => {
+  switch (message.type) {
+    case "text":
+      return { type: "text", text: message.text };
+    case "tool_result":
+      return {
+        type: "tool_result",
+        isError: message.is_error,
+        toolUseId: message.tool_use_id,
+        content: message.content,
+      };
+    case "tool_use":
+      return {
+        type: "tool_use",
+        toolUseId: message.tool_use_id,
+        name: message.name,
+        arguments: message.args,
+      };
+    case "json":
+      return { type: "text", text: JSON.stringify(message) };
+    case "result":
+      return "Ok" in message
+        ? dialogMessageToInputMessage(message.Ok)
+        : dialogMessageToInputMessage(message.Err);
+  }
+};
 export type DialogMessage =
   | DialogTextMessage
   | DialogToolUseMessage
