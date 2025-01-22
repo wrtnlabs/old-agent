@@ -12,8 +12,9 @@ import { TOOLS } from "./agent/tools";
 import { buildLangCodePrompt } from "./lang_code_prompt";
 import { Message } from "../lm_bridge/inputs/message";
 import { validate } from "typia";
+
 const TEMPERATURE = 0.2;
-// const FREQUENCY_PENALTY = 0.0;
+const FREQUENCY_PENALTY = 0.0;
 
 export namespace Agent {
   export interface Input {
@@ -27,6 +28,12 @@ export namespace Agent {
     actions: AgentAction[];
   }
 }
+
+type AgentPrompt = {
+  systemPrompt: string;
+  platformInfoPrompt: string;
+  langCodePrompt: string;
+};
 
 export type AgentAction =
   | AgentChatAction
@@ -92,7 +99,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
   private async callLm(
     input: Agent.Input,
     ctx: StageContext,
-    prompt: PromptSet
+    prompt: AgentPrompt
   ): Promise<AgentAction[]> {
     const MAX_RETRY = 5;
 
@@ -108,6 +115,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         sessionId: ctx.sessionId,
         stageName: this.identifier,
         messages,
+        frequencyPenalty: FREQUENCY_PENALTY,
       });
 
       const message = response.messages.at(0);
@@ -203,7 +211,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
   private buildMessage(
     ctx: StageContext,
     input: Agent.Input,
-    prompt: PromptSet,
+    prompt: AgentPrompt,
     validationFailure: null | {
       assistantResponse: Message;
       feedback: string;
@@ -366,9 +374,3 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     }
   }
 }
-
-type PromptSet = {
-  systemPrompt: string;
-  platformInfoPrompt: string;
-  langCodePrompt: string;
-};
