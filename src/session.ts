@@ -41,7 +41,7 @@ export class MetaAgentSessionManager {
 
   async start(
     options: MetaAgentSessionManagerStart
-  ): Promise<SessionStageContextWrapWrapper> {
+  ): Promise<MetaAgentSession> {
     const connection: BackendKind = (() => {
       switch (options.llmBackendKind) {
         case "openai":
@@ -69,38 +69,13 @@ export class MetaAgentSessionManager {
       initialHistory: options.dialogs,
     };
     // ^?
-    return new SessionStageContextWrapWrapper(param);
+    return new MetaAgentSession(param);
   }
 }
 
 export class MetaAgentSession {
-  constructor() {}
+  constructor(_param: unknown) {}
 
-  // async launch(signal?: AbortSignal): Promise<void> {}
-
-  async abort(): Promise<void> {}
-}
-
-export interface SessionStageContextWrapWrapperOptions {
-  connection: BackendKind;
-  promptSet: never[];
-  connectorProvider: MetaAgentSessionDelegate;
-  sessionId: string;
-  platformInfo: PlatformInfo;
-  userContext: InitialInformation | undefined;
-
-  initialHistory: Dialog[];
-}
-
-export class SessionStageContextWrapWrapper {
-  constructor(
-    private readonly options: SessionStageContextWrapWrapperOptions
-  ) {}
-
-  free(): void {
-    this.options;
-    return;
-  }
   /**
    * @param {AbortSignal | undefined} [signal]
    * @returns {Promise<void>}
