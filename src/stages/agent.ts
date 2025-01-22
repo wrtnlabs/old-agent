@@ -368,7 +368,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
       }
 
       default:
-        throw new Error(
+        throw new StageError(
           `invalid tool name: ${toolUse.toolName}; it is not supported`
         );
     }
