@@ -57,7 +57,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
 
   constructor() {
     this.lmBridge = new LmBridge(TEMPERATURE, false, TOOLS);
-    this.lmBridge;
+    this.lmBridge; // TODO: remove this
   }
 
   async execute(
@@ -85,7 +85,8 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         frequencyPenalty: FREQUENCY_PENALTY,
       }
     );
-    actions;
+    actions; // TODO: remove this line
+
     throw new Error("Method not implemented.");
   }
 }
