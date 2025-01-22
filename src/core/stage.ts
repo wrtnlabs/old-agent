@@ -25,3 +25,10 @@ export interface StageContext {
     name: string
   ): Promise<OpenAiFunction | undefined>;
 }
+
+export class StageError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "StageError";
+  }
+}

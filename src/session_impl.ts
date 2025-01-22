@@ -1,6 +1,6 @@
 import * as uuid from "uuid";
 import { ChatHistory, Speaker } from "./chat_history";
-import { StageContext } from "./core/stage";
+import { StageContext, StageError } from "./core/stage";
 import { MetaAgentSessionDelegate } from "./delegate";
 import { DialogEmitter } from "./dialog_emitter";
 import { OpenAiFunctionSummary, OpenAiFunction } from "./function";
@@ -64,14 +64,14 @@ export class StageGroup {
       try {
         await state.step(previousError, userQuery);
       } catch (err) {
-        if (err instanceof Error) {
-          // TODO: use StageError
+        if (err instanceof StageError) {
           previousError = err.message;
-        } else {
-          console.error("session ended with an error: %o", err);
-          input.delegate.onError?.(err);
-          break;
+          continue;
         }
+        const error = new Error("unexpected error", { cause: err });
+        console.error("session ended with an error: %o", error);
+        input.delegate.onError?.(error);
+        break;
       }
     }
   }
