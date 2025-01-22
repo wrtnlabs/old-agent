@@ -26,9 +26,9 @@ export class LmBridge {
   public continueBackend: Backend = undefined as unknown as Backend;
   public temperature: number;
   public jsonMode: boolean;
-  public tools: Tool[];
+  public tools: readonly Tool[];
 
-  constructor(temperature: number, jsonMode: boolean, tools: Tool[]) {
+  constructor(temperature: number, jsonMode: boolean, tools: readonly Tool[]) {
     this.backendFactory = () => {
       // TODO: dummy impl
       throw new Error("Backend not set");

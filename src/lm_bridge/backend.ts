@@ -43,6 +43,6 @@ export interface CompletionOptions {
   temperature: number;
   jsonMode: boolean;
   frequencyPenalty?: number;
-  tools: Tool[];
+  tools: readonly Tool[];
   toolChoice?: ToolChoice;
 }
