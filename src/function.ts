@@ -13,3 +13,11 @@ export interface OpenAiFunctionSummary
 export function stringifyConnectorKey(connector: OpenAiFunction): string {
   return `${connector.method}:${connector.path}`;
 }
+
+export function stringifyConnector(
+  connector: OpenAiFunction,
+  includeReturnType: boolean
+): string {
+  throw new Error("TODO");
+}
+

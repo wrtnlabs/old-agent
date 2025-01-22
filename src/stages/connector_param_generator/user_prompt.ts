@@ -1,5 +1,5 @@
 import { Dialog } from "../../chat_history";
-import { OpenAiFunction } from "../../function";
+import { OpenAiFunction, stringifyConnector } from "../../function";
 import { collectHistoryPrompt } from "../collect_history_prompt";
 
 export function buildUserPrompt(
@@ -101,11 +101,4 @@ For any strings in the JSON of your response, correctly escape strings, especial
 <useful_tips>
 - You may see "iri" format sometimes. This is a equivalent to "uri" format, but it allows non-url-encoded characters such as Korean, Japanese, special characters, and so on.
 </useful_tips>`;
-}
-
-function stringifyConnector(
-  _connector: OpenAiFunction,
-  _includeReturnType: boolean
-): string {
-  throw new Error("TODO");
 }
