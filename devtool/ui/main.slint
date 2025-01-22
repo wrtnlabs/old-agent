@@ -4,7 +4,7 @@ import {
     HorizontalBox,
     ListView,
     Palette,
-    VerticalBox
+    VerticalBox, TextEdit
 } from "std-widgets.slint";
 
 import { History } from "./history.slint";
@@ -21,7 +21,7 @@ export component DevTool inherits Window {
     in property <[History]> chat-history <=> chat-history-view.model;
     out property <bool> connecting: false;
 
-    callback session-starting(UserInformation);
+    callback session-starting(UserInformation, string);
     callback message-accepted <=> chat-input.accepted;
 
     HorizontalLayout {
@@ -34,6 +34,18 @@ export component DevTool inherits Window {
                 enabled: true;
             }
 
+            VerticalBox {
+                Text {
+                    text: "Preview";
+                }
+
+                platform-prompt-edit := TextEdit {
+                    height: 150px;
+                    text: "You are a helpful agent!";
+                    wrap: TextWrap.word-wrap;
+                }
+            }
+
             HorizontalLayout {
                 alignment: start;
 
@@ -42,7 +54,7 @@ export component DevTool inherits Window {
                     text: "Start Session";
                     clicked => {
                         root.connecting = true;
-                        root.session-starting(user-information-form.model);
+                        root.session-starting(user-information-form.model, platform-prompt-edit.text );
                     }
                 }
             }

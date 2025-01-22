@@ -1,7 +1,6 @@
 import {
   type CommitEvent,
   type ConnectorCallEvent,
-  type Dialog,
   type FunctionQuery,
   type InitialInformation,
   type JsonValue,
@@ -15,10 +14,17 @@ import {
   type RollbackEvent,
   type StatisticsEvent,
 } from "@wrtnio/agent-os";
+import { type IHttpOpenAiApplication } from "@wrtnio/schema";
 import * as slint from "slint-ui";
 import * as uuid from "uuid";
 
 const sessionManager = new MetaAgentSessionManager({});
+
+interface Dialog {
+  visible: boolean;
+  speaker: string;
+  message: string;
+}
 
 interface History {
   timestamp: string;
@@ -28,7 +34,7 @@ interface History {
 interface DevTool extends slint.ComponentHandle {
   session_id: string;
   chat_history: slint.ArrayModel<History>;
-  session_starting(userInformation: InitialInformation): void;
+  session_starting(userInformation: InitialInformation, prompt: string): void;
   message_accepted(message: string): void;
 }
 
@@ -37,14 +43,14 @@ const ui: any = slint.loadFile(new URL("../ui/main.slint", import.meta.url));
 class App implements MetaAgentSessionDelegate {
   tool: DevTool;
   session: MetaAgentSession | undefined;
+  doc: IHttpOpenAiApplication | undefined;
   abortController = new AbortController();
 
   constructor() {
     this.tool = new ui.DevTool();
     this.tool.chat_history = new slint.ArrayModel<History>([]);
-    this.tool.session_starting = async (userInformation) => {
+    this.tool.session_starting = async (userInformation, prompt) => {
       console.log("on-start-session %o", userInformation);
-      const prompt = "Hello, how can I help you today?";
       this.session = await sessionManager.start({
         llmBackendKind: "openai",
         llmApiKey: process.env["OPENAI_API_KEY"]!,
@@ -61,27 +67,39 @@ class App implements MetaAgentSessionDelegate {
   }
 
   async run() {
+    const response = await fetch(
+      "https://wrtnio.github.io/connectors/swagger/openai-positional.json"
+    );
+    this.doc = (await response.json()) as IHttpOpenAiApplication;
+
     await this.tool.run();
   }
 
-  onError(event: Error): void {
-    throw new Error("Method not implemented.");
+  onError(error: Error): void {
+    console.error("Error occured: %o", error);
   }
 
   onRead(event: ReadEvent): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
-  onMessage(event: MessageEvent): Promise<void> {
-    throw new Error("Method not implemented.");
+  async onMessage(event: MessageEvent): Promise<void> {
+    this.tool.chat_history.push({
+      timestamp: new Date().toISOString(),
+      dialog: {
+        visible: event.dialog.visible,
+        speaker: event.dialog.speaker.type,
+        message: JSON.stringify(event.dialog.message),
+      },
+    });
   }
 
-  onCommit(event: CommitEvent): Promise<void> {
-    throw new Error("Method not implemented.");
+  async onCommit(event: CommitEvent): Promise<void> {
+    console.log("committed");
   }
 
-  onRollback(event: RollbackEvent): Promise<void> {
-    throw new Error("Method not implemented.");
+  async onRollback(event: RollbackEvent): Promise<void> {
+    console.log("rolled back");
   }
 
   onConnectorCall(event: ConnectorCallEvent): Promise<JsonValue> {
@@ -89,18 +107,18 @@ class App implements MetaAgentSessionDelegate {
   }
 
   onStatistics(event: StatisticsEvent): void {
-    throw new Error("Method not implemented.");
+    console.info("Statistics: %o", event);
   }
 
-  findFunction(
+  async findFunction(
     sessionId: string,
     name: string
   ): Promise<OpenAiFunction | undefined> {
-    throw new Error("Method not implemented.");
+    return this.doc?.functions.find((f) => `${f.method}:${f.path}` === name);
   }
 
-  queryFunctions(query: FunctionQuery): Promise<OpenAiFunctionSummary[]> {
-    throw new Error("Method not implemented.");
+  async queryFunctions(query: FunctionQuery): Promise<OpenAiFunctionSummary[]> {
+    return this.doc?.functions ?? [];
   }
 }
 
