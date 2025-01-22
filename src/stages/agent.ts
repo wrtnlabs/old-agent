@@ -1,6 +1,6 @@
 import { Dialog } from "../chat_history";
 import { Stage, StageContext } from "../core/stage";
-import { OpenAiFunction } from "../function";
+import { OpenAiFunction } from "../core/connector";
 import { LmBridge, LmBridgeRequest } from "../lm_bridge/lm_bridge";
 import { CompletionToolUseMessage } from "../lm_bridge/outputs/completion";
 import { PlatformInfo } from "../session";
@@ -57,6 +57,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
 
   constructor() {
     this.lmBridge = new LmBridge(TEMPERATURE, false, TOOLS);
+    this.lmBridge;
   }
 
   async execute(
@@ -84,18 +85,18 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         frequencyPenalty: FREQUENCY_PENALTY,
       }
     );
-
+    actions;
     throw new Error("Method not implemented.");
   }
 }
 
 // TODO: dummy interface
 async function callLlm(
-  stage: unknown,
-  ctx: StageContext,
-  input: Agent.Input,
-  prompts: Record<string, string>,
-  request: Omit<LmBridgeRequest, "messages">
+  _stage: unknown,
+  _ctx: StageContext,
+  _input: Agent.Input,
+  _prompts: Record<string, string>,
+  _request: Omit<LmBridgeRequest, "messages">
 ): Promise<AgentAction[]> {
   return [];
 }

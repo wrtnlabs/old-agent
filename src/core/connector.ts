@@ -15,9 +15,8 @@ export function stringifyConnectorKey(connector: OpenAiFunction): string {
 }
 
 export function stringifyConnector(
-  connector: OpenAiFunction,
-  includeReturnType: boolean
+  _connector: OpenAiFunction,
+  _includeReturnType: boolean
 ): string {
   throw new Error("TODO");
 }
-
