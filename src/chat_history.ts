@@ -50,14 +50,9 @@ const dialogMessageToInputMessage = (
     case "json":
       return { type: "text", text: JSON.stringify(message) };
     case "result":
-      return {
-        type: "text",
-        text: JSON.stringify(
-          "Ok" in message
-            ? dialogMessageToInputMessage(message.Ok)
-            : dialogMessageToInputMessage(message.Err)
-        ),
-      };
+      return "Ok" in message
+        ? dialogMessageToInputMessage(message.Ok)
+        : dialogMessageToInputMessage(message.Err);
   }
 };
 export type DialogMessage =
