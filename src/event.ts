@@ -9,7 +9,14 @@ import { OpenAiFunction } from "./core/connector";
  * Any [Request::Talk] request should be sent after receiving this event.
  * Requests sent before receiving this event will be silently ignored.
  */
-export interface ReadEvent {}
+export interface ReadEvent {
+  /**
+   * A signal that allows you to communicate with an asynchronous operation and abort it if desired.
+   *
+   * Please use this signal to a fetch request, so that the agent can cancel the request if needed.
+   */
+  signal?: AbortSignal;
+}
 
 /**
  * Represents a message event.
@@ -33,6 +40,12 @@ export interface RollbackEvent {}
 export interface ConnectorCallEvent {
   function: OpenAiFunction;
   args: JsonValue[];
+  /**
+   * A signal that allows you to communicate with an asynchronous operation and abort it if desired.
+   *
+   * Please use this signal to a fetch request, so that the agent can cancel the request if needed.
+   */
+  signal?: AbortSignal;
 }
 
 export interface StatisticsEvent {

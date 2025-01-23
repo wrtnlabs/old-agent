@@ -122,16 +122,21 @@ class SessionState implements StageContext {
   }
 
   async allFunctions(): Promise<OpenAiFunctionSummary[]> {
-    return await this._delegate.queryFunctions({
-      sessionId: this.sessionId,
-    });
+    return await this._delegate.queryFunctions(
+      {
+        sessionId: this.sessionId,
+      },
+      { signal: this.signal }
+    );
   }
 
   async findFunction(
     sessionId: string,
     name: string
   ): Promise<OpenAiFunction | undefined> {
-    return await this._delegate.findFunction(sessionId, name);
+    return await this._delegate.findFunction(sessionId, name, {
+      signal: this.signal,
+    });
   }
 
   // #end
