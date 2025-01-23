@@ -62,7 +62,7 @@ export class MetaAgentSessionManager {
       }
     })();
 
-    return new MetaAgentSession(
+    return new MetaAgentSessionImpl(
       this._stages,
       connection,
       this._promptSet,
@@ -75,7 +75,13 @@ export class MetaAgentSessionManager {
   }
 }
 
-export class MetaAgentSession implements SessionInput {
+export interface MetaAgentSession {
+  launch(signal?: AbortSignal): Promise<void>;
+  compute_cost(): CostDetail;
+  abort(): Promise<void>;
+}
+
+class MetaAgentSessionImpl implements MetaAgentSession, SessionInput {
   constructor(
     private stages: StageGroup,
     public connection: Connection,
