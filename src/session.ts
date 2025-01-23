@@ -2,11 +2,13 @@ import { ChatHistory, Dialog } from "./chat_history";
 import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
 import { BackendKind, Connection } from "./lm_bridge/backend";
+import { AgentLogger } from "./logger";
 import { PromptSet } from "./prompt_set";
 import { SessionInput, StageGroup } from "./session_impl";
 
 export interface MetaAgentSessionManagerInit {
   promptSet: PromptSet;
+  logger: AgentLogger;
 }
 
 export interface MetaAgentSessionManagerStart {
@@ -42,7 +44,7 @@ export class MetaAgentSessionManager {
   private _stages = new StageGroup();
   private _promptSet: PromptSet;
 
-  constructor(options: MetaAgentSessionManagerInit) {
+  constructor(readonly options: MetaAgentSessionManagerInit) {
     this._promptSet = options.promptSet;
   }
 
