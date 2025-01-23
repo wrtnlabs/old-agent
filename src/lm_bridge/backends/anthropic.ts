@@ -56,15 +56,20 @@ export class Anthropic implements Backend {
       }
     })();
 
-    const response = await client.messages.create({
-      max_tokens: 0,
-      messages: lmMessages.messages,
-      model: connection.kind.model,
-      system: lmMessages.systemPrompt,
-      temperature: options.temperature,
-      ...toolChoice,
-      tools,
-    });
+    const response = await client.messages.create(
+      {
+        max_tokens: 0,
+        messages: lmMessages.messages,
+        model: connection.kind.model,
+        system: lmMessages.systemPrompt,
+        temperature: options.temperature,
+        ...toolChoice,
+        tools,
+      },
+      {
+        signal: options.signal,
+      }
+    );
 
     const { id, content, model, usage, stop_reason } = response;
 

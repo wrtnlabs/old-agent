@@ -45,4 +45,5 @@ export interface CompletionOptions {
   frequencyPenalty?: number;
   tools: readonly Tool[];
   toolChoice?: ToolChoice;
+  signal?: AbortSignal;
 }

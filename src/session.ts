@@ -94,7 +94,7 @@ export class MetaAgentSession implements SessionInput {
    * @returns {Promise<void>}
    */
   launch(signal?: AbortSignal): Promise<void> {
-    return this.stages.run(this);
+    return this.stages.run(this, signal);
   }
   /**
    * @returns {CostDetail}
