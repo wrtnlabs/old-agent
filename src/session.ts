@@ -1,9 +1,13 @@
-import { Dialog } from "./chat_history";
+import { ChatHistory, Dialog } from "./chat_history";
 import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
-import { BackendKind } from "./lm_bridge/backend";
+import { BackendKind, Connection } from "./lm_bridge/backend";
+import { PromptSet } from "./prompt_set";
+import { SessionInput, StageGroup } from "./session_impl";
 
-export interface MetaAgentSessionManagerInit {}
+export interface MetaAgentSessionManagerInit {
+  promptSet: PromptSet;
+}
 
 export interface MetaAgentSessionManagerStart {
   host?: string;
@@ -35,54 +39,62 @@ export interface PlatformInfo {
 }
 
 export class MetaAgentSessionManager {
+  private _stages = new StageGroup();
+  private _promptSet: PromptSet;
+
   constructor(options: MetaAgentSessionManagerInit) {
-    options;
+    this._promptSet = options.promptSet;
   }
 
   async start(
     options: MetaAgentSessionManagerStart
   ): Promise<MetaAgentSession> {
-    const connection: BackendKind = (() => {
+    const connection: Connection = (() => {
       switch (options.llmBackendKind) {
         case "openai":
           return {
-            kind: "openai",
+            kind: { kind: "openai", model: "gpt-4o-2024-11-20" },
             apiKey: options.llmApiKey,
-            model: "gpt-4o-2024-11-20",
           };
         case "claude":
           return {
-            kind: "claude",
+            kind: { kind: "claude", model: "claude-3-5-sonnet-20241022" },
             apiKey: options.llmApiKey,
-            model: "claude-3-5-sonnet-20241022",
           };
       }
     })();
 
-    const param = {
+    return new MetaAgentSession(
+      this._stages,
       connection,
-      promptSet: [],
-      connectorProvider: options.delegate,
-      sessionId: options.sessionId,
-      platformInfo: options.platformInfo,
-      userContext: options.initialInformation,
-      initialHistory: options.dialogs,
-    };
-    // ^?
-    return new MetaAgentSession(param);
+      this._promptSet,
+      options.delegate,
+      options.sessionId,
+      options.platformInfo,
+      options.initialInformation || {},
+      new ChatHistory(options.dialogs)
+    );
   }
 }
 
-export class MetaAgentSession {
-  constructor(_param: unknown) {}
+export class MetaAgentSession implements SessionInput {
+  constructor(
+    private stages: StageGroup,
+    public connection: Connection,
+    public promptSet: PromptSet,
+    public delegate: MetaAgentSessionDelegate,
+    public sessionId: string,
+    public platformInfo: PlatformInfo,
+    public userContext: InitialInformation,
+    public initialHistory: ChatHistory
+  ) {}
 
   /**
    * @param {AbortSignal | undefined} [signal]
    * @returns {Promise<void>}
    */
   launch(signal?: AbortSignal): Promise<void> {
-    signal;
-    return Promise.resolve();
+    return this.stages.run(this);
   }
   /**
    * @returns {CostDetail}
