@@ -46,6 +46,11 @@ export class MetaAgentSessionManager {
     this._promptSet = options.promptSet;
   }
 
+  /**
+   * Make a new session.
+   *
+   * Until the session is launched, the conversation is not started.
+   */
   start(options: MetaAgentSessionManagerStart): MetaAgentSession {
     const connection: Connection = (() => {
       switch (options.llmBackendKind) {
@@ -76,8 +81,29 @@ export class MetaAgentSessionManager {
 }
 
 export interface MetaAgentSession {
+  /**
+   * Launch the session to start the conversation.
+   *
+   * This method will be blocked until all the conversation is finished.
+   * If you want to stop the conversation, you need to call the `AbortController.abort()` on the signal passed to this method.
+   *
+   * Please call this method only once.
+   */
   launch(signal?: AbortSignal): Promise<void>;
+
+  /**
+   * Compute the consumed cost of the current session, from the time of the last launch.
+   */
   compute_cost(): CostDetail;
+
+  /**
+   * Abort the current speech.
+   *
+   * This will cause the read event to be emitted to resume from the user input.
+   *
+   * Note that this method will not stop the launch method.
+   * to stop it, you need to call `AbortController.abort()` on the signal passed to the launch method.
+   */
   abort(): Promise<void>;
 }
 
@@ -93,25 +119,14 @@ class MetaAgentSessionImpl implements MetaAgentSession, SessionInput {
     public initialHistory: ChatHistory
   ) {}
 
-  /**
-   * @param {AbortSignal | undefined} [signal]
-   * @returns {Promise<void>}
-   */
   launch(signal?: AbortSignal): Promise<void> {
     return this.stages.run(this, signal);
   }
-  /**
-   * @returns {CostDetail}
-   */
+
   compute_cost(): CostDetail {
     return { total: { cost: 0, inputTokens: 0, outputTokens: 0 } };
   }
-  /**
-   * Abort the current speech.
-   *
-   * This will cause the read event to be emitted to resume from the user input.
-   * @returns {Promise<void>}
-   */
+
   abort(): Promise<void> {
     return Promise.resolve();
   }
