@@ -43,9 +43,11 @@ export interface PlatformInfo {
 export class MetaAgentSessionManager {
   private _stages = new StageGroup();
   private _promptSet: PromptSet;
+  private _logger: AgentLogger;
 
   constructor(readonly options: MetaAgentSessionManagerInit) {
     this._promptSet = options.promptSet;
+    this._logger = options.logger;
   }
 
   /**
@@ -77,7 +79,8 @@ export class MetaAgentSessionManager {
       options.sessionId,
       options.platformInfo,
       options.initialInformation || {},
-      new ChatHistory(options.dialogs)
+      new ChatHistory(options.dialogs),
+      this._logger
     );
   }
 }
@@ -118,7 +121,8 @@ class MetaAgentSessionImpl implements MetaAgentSession, SessionInput {
     public sessionId: string,
     public platformInfo: PlatformInfo,
     public userContext: InitialInformation,
-    public initialHistory: ChatHistory
+    public initialHistory: ChatHistory,
+    public logger: AgentLogger
   ) {}
 
   launch(signal?: AbortSignal): Promise<void> {
