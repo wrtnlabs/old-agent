@@ -46,9 +46,7 @@ export class MetaAgentSessionManager {
     this._promptSet = options.promptSet;
   }
 
-  async start(
-    options: MetaAgentSessionManagerStart
-  ): Promise<MetaAgentSession> {
+  start(options: MetaAgentSessionManagerStart): MetaAgentSession {
     const connection: Connection = (() => {
       switch (options.llmBackendKind) {
         case "openai":
