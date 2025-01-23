@@ -2,8 +2,11 @@ import { Dialog } from "./chat_history";
 import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
 import { BackendKind } from "./lm_bridge/backend";
+import { AgentLogger } from "./logger";
 
-export interface MetaAgentSessionManagerInit {}
+export interface MetaAgentSessionManagerInit {
+  logger: AgentLogger;
+}
 
 export interface MetaAgentSessionManagerStart {
   host?: string;
@@ -35,7 +38,7 @@ export interface PlatformInfo {
 }
 
 export class MetaAgentSessionManager {
-  constructor(options: MetaAgentSessionManagerInit) {
+  constructor(private readonly options: MetaAgentSessionManagerInit) {
     options;
   }
 
@@ -67,6 +70,7 @@ export class MetaAgentSessionManager {
       platformInfo: options.platformInfo,
       userContext: options.initialInformation,
       initialHistory: options.dialogs,
+      logger: this.options.logger,
     };
     // ^?
     return new MetaAgentSession(param);
