@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@samchon/openapi": "^2.4.0",
-    "@wrtn/studio-meta-agent": "../",
+    "@wrtn/studio-meta-agent": "../wrtnio-agent-os-1.0.0.tgz",
     "@wrtnio/schema": "^3.2.1",
     "typia": "^7.6.0"
   }
