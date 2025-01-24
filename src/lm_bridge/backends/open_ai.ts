@@ -62,8 +62,8 @@ export class OpenAi implements Backend {
         frequency_penalty: options.frequencyPenalty,
         messages: openAiMessages,
         response_format: options.jsonMode ? { type: "json_object" } : undefined,
-        tools,
-        parallel_tool_calls: false,
+        tools: tools.length > 0 ? tools : undefined,
+        parallel_tool_calls: tools.length > 0 ? false : undefined,
         tool_choice,
       },
       {
