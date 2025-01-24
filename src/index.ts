@@ -7,4 +7,4 @@ export * from "./logger";
 export * from "./stages/connector_finder";
 export * from "./core/stage";
 export type * from "./core/types";
-export type * from "./prompt_set";
+export * from "./prompt_set";

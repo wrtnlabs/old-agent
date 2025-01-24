@@ -10,13 +10,10 @@
   "license": "AGPL-3.0-only",
   "dependencies": {
     "@wrtnio/agent-os": "file:../",
-    "nunjucks": "^3.2.4",
-    "nunjucks-async-loader": "^2.1.3",
     "slint-ui": "^1.9.2",
     "uuid": "^11.0.3"
   },
   "devDependencies": {
-    "@types/nunjucks": "^3.2.6",
     "@wrtnio/schema": "^3.2.1"
   }
 }

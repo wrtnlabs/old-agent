@@ -1,6 +1,7 @@
 import {
   ConsoleLogger,
   MetaAgentSessionManager,
+  NunjucksPromptSet,
   type CommitEvent,
   type ConnectorCallEvent,
   type FunctionQuery,
@@ -19,10 +20,9 @@ import {
 import { type IHttpOpenAiApplication } from "@wrtnio/schema";
 import * as slint from "slint-ui";
 import * as uuid from "uuid";
-import { NunjucksPromptSet } from "./prompt_set.mts";
 
 const sessionManager = new MetaAgentSessionManager({
-  promptSet: new NunjucksPromptSet(),
+  promptSet: await NunjucksPromptSet.default(),
   logger: ConsoleLogger,
 });
 
