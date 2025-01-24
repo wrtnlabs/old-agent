@@ -1,13 +1,14 @@
 import {
+  ConsoleLogger,
+  MetaAgentSessionManager,
   type CommitEvent,
   type ConnectorCallEvent,
   type FunctionQuery,
   type InitialInformation,
   type JsonValue,
   type MessageEvent,
-  MetaAgentSession,
+  type MetaAgentSession,
   type MetaAgentSessionDelegate,
-  MetaAgentSessionManager,
   type OpenAiFunction,
   type OpenAiFunctionSummary,
   type ReadEvent,
@@ -17,8 +18,12 @@ import {
 import { type IHttpOpenAiApplication } from "@wrtnio/schema";
 import * as slint from "slint-ui";
 import * as uuid from "uuid";
+import { NunjucksPromptSet } from "./prompt_set.mts";
 
-const sessionManager = new MetaAgentSessionManager({});
+const sessionManager = new MetaAgentSessionManager({
+  promptSet: new NunjucksPromptSet(),
+  logger: ConsoleLogger,
+});
 
 interface Dialog {
   visible: boolean;
