@@ -111,7 +111,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     } = null;
 
     outer: for (let retryIndex = 0; retryIndex < MAX_RETRY; retryIndex++) {
-      const messages = this.buildMessage(ctx, input, prompt);
+      const messages = this.buildMessage(ctx, input, prompt, validationFailure);
       const response: Completion = await this.lmBridge.request({
         connection: ctx.llmConnection,
         sessionId: ctx.sessionId,
@@ -180,7 +180,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     validationFailure: null | {
       assistantResponse: CompletionMessage;
       feedback: string;
-    } = null
+    }
   ): Message[] {
     const prevMessages = input.histories.map((dialog) =>
       dialogToInputMessage(dialog)
