@@ -25,17 +25,18 @@ typia.assertGuard<string>(apiKey);
 
   const evaluationResult = await BenchmarkEnvironment.get([
     OpenApi.convert(swagger),
-  ])({
-    model: "openai",
-    apiKey: apiKey,
-    sessionId: randomUUID(),
-    platformInfo: scenario.platform.prompt,
-    initialInformation: scenario.customer.user_context,
-  })(getClientAgent(apiKey, scenario)).catch((e) => {
-    console.error(e);
-    throw e;
-  });
-
+  ]).then((fn) =>
+    fn({
+      model: "openai",
+      apiKey: apiKey,
+      sessionId: randomUUID(),
+      platformInfo: scenario.platform.prompt,
+      initialInformation: scenario.customer.user_context,
+    })(getClientAgent(apiKey, scenario)).catch((e) => {
+      console.error(e);
+      throw e;
+    })
+  );
   console.log(evaluationResult);
   console.log(performance.now() - start, "ms");
 })();

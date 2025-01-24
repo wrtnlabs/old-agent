@@ -1,4 +1,4 @@
-import { Dialog } from "@wrtn/studio-meta-agent";
+import { Dialog } from "@wrtnio/agent-os";
 import { BenchmarkEnvironment } from "./environment";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";

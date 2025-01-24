@@ -7,14 +7,16 @@ import {
   OpenAiTypeChecker,
 } from "@wrtnio/schema";
 import {
+  ConsoleLogger,
   Dialog,
+  MetaAgentSession,
   MetaAgentSessionManager,
-  SessionStageContextWrapWrapper,
-} from "@wrtn/studio-meta-agent";
+  NunjucksPromptSet,
+} from "@wrtnio/agent-os";
 import { FinishEvaluationResult } from "./client.agent";
 
 export namespace BenchmarkEnvironment {
-  export const get = (swagger: OpenApi.IDocument[]) => {
+  export const get = async (swagger: OpenApi.IDocument[]) => {
     // Intended deprecated method
     const openaiPositional = HttpOpenAi.application({
       document: swagger as any,
@@ -31,7 +33,11 @@ export namespace BenchmarkEnvironment {
     //     parameters: f.separated?.llm.map((p) => p.schema),
     //   }));
 
-    const manager = new MetaAgentSessionManager({});
+    const manager = new MetaAgentSessionManager({
+      logger: ConsoleLogger,
+      promptSet: await NunjucksPromptSet.default(),
+    });
+
     return getAgentContext(manager)(openaiPositional);
   };
 
@@ -53,11 +59,11 @@ export namespace BenchmarkEnvironment {
     ) => {
       const dialogs: Dialog[] = [];
       const client = getClient(props.sessionId, dialogs);
-      let wrapper: SessionStageContextWrapWrapper;
+      let session: MetaAgentSession;
       return await new Promise(
         async (resolve: (value: FinishEvaluationResult) => void) => {
           const abortController = new AbortController();
-          wrapper = await manager.start({
+          session = await manager.start({
             llmBackendKind: props.model,
             llmApiKey: props.apiKey,
             sessionId: props.sessionId,
@@ -89,7 +95,6 @@ export namespace BenchmarkEnvironment {
                 ) {
                   dialogs.push(event.dialog);
                 }
-                debugger;
               },
               onRead: async () => {
                 const { value } = await client.next().catch((e) => {
@@ -112,7 +117,7 @@ export namespace BenchmarkEnvironment {
               },
             },
           });
-          await wrapper.launch(abortController.signal);
+          await session.launch(abortController.signal);
         }
       );
     };

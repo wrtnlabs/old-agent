@@ -22,7 +22,8 @@ import { ConnectorFinder } from "./stages/connector_finder";
 import { ConnectorParamGenerator } from "./stages/connector_param_generator";
 import { JsonValue } from "./core/types";
 import { AgentLogger } from "./logger";
-
+import { APIUserAbortError as AnthropicAPIUserAbortError } from "@anthropic-ai/sdk";
+import { APIUserAbortError as OpenAIAPIUserAbortError } from "openai";
 export interface SessionInput {
   connection: Connection;
   promptSet: PromptSet;
@@ -73,7 +74,10 @@ export class StageGroup {
           previousError = err.message;
           continue;
         }
-        if (err instanceof Error && err.name === "AbortError") {
+        if (
+          err instanceof AnthropicAPIUserAbortError ||
+          err instanceof OpenAIAPIUserAbortError
+        ) {
           break;
         }
         const error = new Error("unexpected error", { cause: err });
