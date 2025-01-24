@@ -111,7 +111,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     } = null;
 
     outer: for (let retryIndex = 0; retryIndex < MAX_RETRY; retryIndex++) {
-      const messages = this.buildMessage(ctx, input, prompt);
+      const messages = this.buildMessage(ctx, input, prompt, validationFailure);
       const response: Completion = await this.lmBridge.request({
         connection: ctx.llmConnection,
         sessionId: ctx.sessionId,
@@ -121,8 +121,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         signal: ctx.signal,
       });
 
-      const message = response.messages.at(0);
-      if (message == null) {
+      if (response.messages.length <= 0) {
         console.warn("agent response is empty; retrying");
         validationFailure = {
           assistantResponse: {
@@ -135,73 +134,43 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         continue outer;
       }
 
-      if (message.type !== "text") {
-        console.warn("connector finder response is not text; retrying");
-
-        validationFailure = {
-          assistantResponse: {
-            role: "assistant",
-            type: "text",
-            text: "<non-text response>",
-          },
-          feedback: "expected text message; got something else",
-        };
-        continue outer;
-      }
-      if (message.text.includes("\n")) {
-        console.warn("connector finder response contains newline; retrying");
-
-        validationFailure = {
-          assistantResponse: {
-            role: "assistant",
-
-            type: "text",
-            text: message.text,
-          },
-          feedback:
-            "you didn't escape the response correctly; please correctly escape all strings in the response",
-        };
-        continue outer;
-      }
-      let output;
-      try {
-        output = JSON.parse(message.text);
-      } catch (err) {
-        validationFailure = {
-          assistantResponse: {
-            role: "assistant",
-            type: "text",
-            text: message.text,
-          },
-          feedback: `"your response is invalid JSON: ${err}"`,
-        };
-        continue outer;
-      }
-
-      console.info("connector finder output=%o", output);
-
       const responseList: AgentAction[] = [];
 
       for (const message of response.messages) {
-        switch (message.type) {
-          case "text": {
-            const action = await this.onText(message);
-            responseList.push(action);
-            break;
+        try {
+          switch (message.type) {
+            case "text": {
+              const action = await this.onText(message);
+              responseList.push(action);
+              break;
+            }
+            case "tool_use": {
+              const action = await this.onToolUse(ctx, message);
+              responseList.push(action);
+              break;
+            }
           }
-          case "tool_use": {
-            const action = await this.onToolUse(ctx, message);
-            responseList.push(action);
-            break;
+        } catch (err) {
+          if (err instanceof Error) {
+            console.warn(
+              "agent returned invalid response with %s message; retrying; error=%o",
+              message.type,
+              err
+            );
+            validationFailure = {
+              assistantResponse: message,
+              feedback: err.message,
+            };
+            continue outer;
+          } else {
+            throw new Error("unexpected error", { cause: err });
           }
         }
       }
 
       return responseList;
     }
-    throw new Error(
-      `LLM returned invalid response: ${validationFailure?.feedback ?? ""}`
-    );
+    throw new StageError("max retry count reached");
   }
 
   private buildMessage(
@@ -211,7 +180,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     validationFailure: null | {
       assistantResponse: CompletionMessage;
       feedback: string;
-    } = null
+    }
   ): Message[] {
     const prevMessages = input.histories.map((dialog) =>
       dialogToInputMessage(dialog)

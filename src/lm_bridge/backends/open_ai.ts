@@ -174,6 +174,7 @@ function buildInputSchema(parameters: ToolParameter[]): FunctionParameters {
     .map((p) => p.name)
     .toArray();
   return {
+    type: "object",
     properties,
     required,
   };

@@ -4,6 +4,8 @@ import { Backend, Connection } from "./backend";
 import { Message } from "./inputs/message";
 import { Tool, ToolChoice } from "./inputs/tool";
 import { Completion } from "./outputs/completion";
+import { OpenAi } from "./backends/open_ai";
+import { Anthropic } from "./backends/anthropic";
 
 export interface BackoffStrategy {
   maxRetries: number;
@@ -29,9 +31,18 @@ export class LmBridge {
   public tools: readonly Tool[];
 
   constructor(temperature: number, jsonMode: boolean, tools: readonly Tool[]) {
-    this.backendFactory = () => {
-      // TODO: dummy impl
-      throw new Error("Backend not set");
+    this.backendFactory = (connection) => {
+      switch (connection.kind.kind) {
+        case "openai": {
+          return new OpenAi();
+        }
+        case "claude": {
+          return new Anthropic();
+        }
+        default: {
+          throw new Error("unsupported backend kind");
+        }
+      }
     };
     this.temperature = temperature;
     this.jsonMode = jsonMode;

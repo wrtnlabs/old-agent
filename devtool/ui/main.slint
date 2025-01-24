@@ -1,0 +1,93 @@
+import {
+    AboutSlint,
+    Button,
+    HorizontalBox,
+    ListView,
+    Palette,
+    VerticalBox, TextEdit
+} from "std-widgets.slint";
+
+import { History } from "./history.slint";
+import {
+    UserInformation,
+    UserInformationForm
+} from "./user-information-form.slint";
+import { ChatInput } from "./widgets.slint";
+import { ChatHistoryView } from "chat-history.slint";
+
+
+export component DevTool inherits Window {
+    in property <string> session-id;
+    in property <[History]> chat-history <=> chat-history-view.model;
+    out property <bool> connecting: false;
+    in-out property <string> platform-prompt <=> platform-prompt-edit.text;
+
+    callback session-starting(UserInformation, string);
+    callback message-accepted <=> chat-input.accepted;
+
+    HorizontalLayout {
+        alignment: stretch;
+        VerticalBox {
+            alignment: stretch;
+            horizontal-stretch: 0;
+
+            user-information-form := UserInformationForm {
+                enabled: true;
+            }
+
+            VerticalBox {
+                Text {
+                    text: "Preview";
+                }
+
+                platform-prompt-edit := TextEdit {
+                    height: 150px;
+                    text: "You are a helpful agent!";
+                    wrap: TextWrap.word-wrap;
+                }
+            }
+
+            HorizontalLayout {
+                alignment: start;
+
+                start-session-button := Button {
+                    enabled: true;
+                    text: "Start Session";
+                    clicked => {
+                        root.connecting = true;
+                        root.session-starting(user-information-form.model, platform-prompt-edit.text );
+                    }
+                }
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+            }
+
+            AboutSlint {
+                preferred-width: 64px;
+                preferred-height: 32px;
+            }
+        }
+
+        VerticalBox {
+            horizontal-stretch: 1;
+            min-width: 300px;
+            min-height: 300px;
+
+            chat-history-view := ChatHistoryView { }
+
+            chat-input := ChatInput {
+                enabled: false;
+            }
+        }
+    }
+
+    states [
+        session-starting when root.connecting || root.session-id != "": {
+            user-information-form.enabled: false;
+            start-session-button.enabled: false;
+            chat-input.enabled: true;
+        }
+    ]
+}

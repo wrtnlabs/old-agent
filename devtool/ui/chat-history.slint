@@ -1,0 +1,60 @@
+import { ListView, Palette } from "std-widgets.slint";
+import { Dialog, History } from "./history.slint";
+
+component ChatHistoryItem inherits VerticalLayout {
+    in property <string> timestamp: "2024-12-22 22:04:58";
+    in property <bool> user-facing: true;
+    in property <string> speaker: "User";
+    in property <string> message: "Hello, World!\nHow are you?";
+
+    spacing: 2px;
+
+    Text {
+        text: root.speaker;
+        wrap: word-wrap;
+    }
+
+    Rectangle {
+        background: Palette.accent-background;
+        border-radius: 12px;
+
+        VerticalLayout {
+            padding: 16px;
+            padding-left: 20px;
+            padding-right: 20px;
+
+            Text {
+                text: root.message;
+                color: Palette.accent-foreground;
+            }
+        }
+    }
+}
+
+export component ChatHistoryView inherits ListView {
+    in property <[History]> model: [
+        {
+            timestamp: "2021-01-01 00:00:00",
+            dialog: {
+                visible: true,
+                speaker: "User",
+                message: "Hello, World!",
+            },
+        },
+        {
+            timestamp: "2021-01-01 00:00:01",
+            dialog: {
+                visible: true,
+                speaker: "Agent",
+                message: "Hi, there!",
+            },
+        },
+    ];
+
+    for history in root.model: ChatHistoryItem {
+        timestamp: history.timestamp;
+        user-facing: history.dialog.visible;
+        speaker: history.dialog.speaker;
+        message: history.dialog.message;
+    }
+}

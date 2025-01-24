@@ -1,0 +1,31 @@
+import {
+    Button,
+    HorizontalBox,
+    LineEdit,
+    Spinner
+} from "std-widgets.slint";
+
+export component ChatInput inherits HorizontalBox {
+    in-out property <bool> enabled <=> message-edit.enabled;
+    in property <bool> progressing: false;
+    callback accepted(string);
+
+    forward-focus: message-edit;
+
+    spinner := Spinner {
+        indeterminate: root.progressing;
+    }
+
+    message-edit := LineEdit {
+        accepted(event) => {
+            root.accepted(self.text);
+            self.text = "";
+        }
+    }
+
+    Button {
+        enabled: message-edit.enabled;
+        text: "Send";
+        forward-focus: message-edit;
+    }
+}

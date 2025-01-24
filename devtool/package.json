@@ -1,0 +1,19 @@
+{
+  "name": "@wrtnio/agent-devtool",
+  "version": "0.1.0",
+  "main": "src/index.mts",
+  "private": true,
+  "scripts": {
+    "dev": "node --experimental-strip-types src/index.mts"
+  },
+  "author": "Eunchong Yu <gracie@wrtn.io>",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@wrtnio/agent-os": "file:../",
+    "slint-ui": "^1.9.2",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@wrtnio/schema": "^3.2.1"
+  }
+}
