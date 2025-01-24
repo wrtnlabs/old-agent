@@ -118,6 +118,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         stageName: this.identifier,
         messages,
         frequencyPenalty: FREQUENCY_PENALTY,
+        signal: ctx.signal,
       });
 
       const message = response.messages.at(0);

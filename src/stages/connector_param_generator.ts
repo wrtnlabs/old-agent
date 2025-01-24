@@ -119,6 +119,7 @@ export class ConnectorParamGenerator
         stageName: this.identifier,
         messages,
         frequencyPenalty: FREQUENCY_PENALTY,
+        signal: context.signal,
       });
 
       // TODO: implement this

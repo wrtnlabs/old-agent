@@ -86,6 +86,7 @@ export class LmBridge {
       messages,
       frequencyPenalty,
       toolChoice,
+      signal,
     } = options;
     const response = await backend.makeCompletion(
       connection,
@@ -98,6 +99,7 @@ export class LmBridge {
         frequencyPenalty,
         tools: this.tools,
         toolChoice,
+        signal,
       }
     );
 
@@ -130,6 +132,7 @@ export class LmBridge {
               frequencyPenalty,
               tools: this.tools,
               toolChoice,
+              signal,
             }
           );
           // TODO: handle HTTP 429 Too Many Requests
@@ -166,6 +169,7 @@ export interface LmBridgeRequest {
   toolChoice?: ToolChoice;
   backoffStrategy?: BackoffStrategy;
   stream?: boolean;
+  signal?: AbortSignal;
 }
 
 class BackoffError extends Error {

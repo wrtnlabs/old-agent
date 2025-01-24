@@ -55,16 +55,21 @@ export class OpenAi implements Backend {
       }
     }
 
-    const response = await client.chat.completions.create({
-      model: connection.kind.model,
-      temperature: options.temperature,
-      frequency_penalty: options.frequencyPenalty,
-      messages: openAiMessages,
-      response_format: options.jsonMode ? { type: "json_object" } : undefined,
-      tools,
-      parallel_tool_calls: false,
-      tool_choice,
-    });
+    const response = await client.chat.completions.create(
+      {
+        model: connection.kind.model,
+        temperature: options.temperature,
+        frequency_penalty: options.frequencyPenalty,
+        messages: openAiMessages,
+        response_format: options.jsonMode ? { type: "json_object" } : undefined,
+        tools,
+        parallel_tool_calls: false,
+        tool_choice,
+      },
+      {
+        signal: options.signal,
+      }
+    );
     const {
       id,
       choices: [choice],

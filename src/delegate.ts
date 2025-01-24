@@ -20,11 +20,24 @@ export interface MetaAgentSessionDelegate {
 
   findFunction(
     sessionId: string,
-    name: string
+    name: string,
+    options: RequestOptions
   ): Promise<OpenAiFunction | undefined>;
-  queryFunctions(query: FunctionQuery): Promise<OpenAiFunctionSummary[]>;
+  queryFunctions(
+    query: FunctionQuery,
+    options: RequestOptions
+  ): Promise<OpenAiFunctionSummary[]>;
 }
 
 export interface FunctionQuery {
   sessionId: string;
+}
+
+export interface RequestOptions {
+  /**
+   * A signal that allows you to communicate with an asynchronous operation and abort it if desired.
+   *
+   * Please use this signal to a fetch request, so that the agent can cancel the request if needed.
+   */
+  signal?: AbortSignal;
 }
