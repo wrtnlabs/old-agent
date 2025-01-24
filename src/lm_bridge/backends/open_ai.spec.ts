@@ -12,23 +12,21 @@ import {
 } from "./common.spec";
 import { Connection, OpenAiModel } from "../backend";
 
-function connection(modelKind: OpenAiModel): Connection {
-  return {
-    kind: { kind: "openai", model: modelKind },
-    apiKey: process.env["OPENAI_API_KEY"]!,
-  };
-}
+const OPENAI_API_KEY = process.env["OPENAI_API_KEY"];
 
 function lmBridge(jsonMode: boolean, tools: readonly Tool[]) {
   return new LmBridge(0.8, jsonMode, tools);
 }
 
-describe("OpenAi", () => {
-  describe.for<[string, OpenAiModel]>([
+describe.runIf(OPENAI_API_KEY != null)("OpenAi", () => {
+  describe.concurrent.for<[string, OpenAiModel]>([
     ["GPT4o", "gpt-4o-2024-11-20"],
     ["GPT4o-mini", "gpt-4o-mini-2024-07-18"],
-  ])("%s", ([_, modelKind]) => {
-    const conn = connection(modelKind);
+  ])("%s", ([_, model]) => {
+    const conn: Connection = {
+      kind: { kind: "openai", model },
+      apiKey: OPENAI_API_KEY!,
+    };
 
     test.concurrent("no sys, no json", async () => {
       await testNoSysNoJson(conn, lmBridge);
