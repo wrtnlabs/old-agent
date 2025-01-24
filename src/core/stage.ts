@@ -1,6 +1,7 @@
 import { OpenAiFunction, OpenAiFunctionSummary } from "./connector";
 import { Connection } from "../lm_bridge/backend";
 import { InitialInformation } from "../session";
+import { AgentLogger } from "../logger";
 
 export interface StageInfo {
   identifier: string;
@@ -11,6 +12,7 @@ export interface Stage<I, O> extends StageInfo {
 }
 
 export interface StageContext {
+  logger: AgentLogger;
   llmConnection: Connection;
   sessionId: string;
   langCode: string;

@@ -122,7 +122,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
       });
 
       if (response.messages.length <= 0) {
-        console.warn("agent response is empty; retrying");
+        ctx.logger.warn("agent response is empty; retrying");
         validationFailure = {
           assistantResponse: {
             role: "assistant",

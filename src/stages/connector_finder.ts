@@ -3,6 +3,7 @@ import { OpenAiFunction } from "../core/connector";
 import { Message } from "../lm_bridge/inputs/message";
 import { LmBridge } from "../lm_bridge/lm_bridge";
 import { Completion } from "../lm_bridge/outputs/completion";
+import { AgentLogger } from "../logger";
 
 const TEMPERATURE = 0.2;
 const MAX_RETRIES = 5;
@@ -70,8 +71,8 @@ export class ConnectorFinder
 
   private lmBridge: LmBridge;
 
-  constructor() {
-    this.lmBridge = new LmBridge(TEMPERATURE, true, []);
+  constructor(public readonly logger: AgentLogger) {
+    this.lmBridge = new LmBridge(TEMPERATURE, true, [], logger);
   }
 
   async execute(
@@ -85,7 +86,7 @@ export class ConnectorFinder
     let validationPrompt: ValidationFailure | undefined;
 
     outer: for (let retryIndex = 0; retryIndex < MAX_RETRIES; retryIndex++) {
-      console.info(
+      this.logger.log(
         `connector finder retryIndex: %i, validationPrompt: %o`,
         retryIndex,
         validationPrompt
@@ -109,7 +110,7 @@ export class ConnectorFinder
 
       const message = response.messages.at(0);
       if (message == null) {
-        console.warn("connector finder response is empty; retrying");
+        this.logger.warn("connector finder response is empty; retrying");
 
         validationPrompt = {
           assistantResponse: "<empty response>",
@@ -118,7 +119,7 @@ export class ConnectorFinder
         continue outer;
       }
       if (message.type !== "text") {
-        console.warn("connector finder response is not text; retrying");
+        this.logger.warn("connector finder response is not text; retrying");
 
         validationPrompt = {
           assistantResponse: "<non-text response>",
@@ -127,7 +128,9 @@ export class ConnectorFinder
         continue outer;
       }
       if (message.text.includes("\n")) {
-        console.warn("connector finder response contains newline; retrying");
+        this.logger.warn(
+          "connector finder response contains newline; retrying"
+        );
 
         validationPrompt = {
           assistantResponse: message.text,
@@ -147,14 +150,14 @@ export class ConnectorFinder
         continue outer;
       }
 
-      console.info("connector finder output=%o", output);
+      this.logger.log("connector finder output=%o", output);
 
       const connectors: OpenAiFunction[] = [];
 
       for (const id in output.connector_ids) {
         const connector = await context.findFunction(context.sessionId, id);
         if (connector == null) {
-          console.warn(
+          this.logger.warn(
             "connector finder response contains an invalid connector id `%s`; retrying",
             id
           );
