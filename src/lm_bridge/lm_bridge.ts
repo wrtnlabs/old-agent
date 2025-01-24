@@ -6,6 +6,7 @@ import { Tool, ToolChoice } from "./inputs/tool";
 import { Completion } from "./outputs/completion";
 import { OpenAi } from "./backends/open_ai";
 import { Anthropic } from "./backends/anthropic";
+import { AgentLogger } from "../logger";
 
 export interface BackoffStrategy {
   maxRetries: number;
@@ -30,7 +31,12 @@ export class LmBridge {
   public jsonMode: boolean;
   public tools: readonly Tool[];
 
-  constructor(temperature: number, jsonMode: boolean, tools: readonly Tool[]) {
+  constructor(
+    temperature: number,
+    jsonMode: boolean,
+    tools: readonly Tool[],
+    public logger: AgentLogger
+  ) {
     this.backendFactory = (connection) => {
       switch (connection.kind.kind) {
         case "openai": {
@@ -52,10 +58,10 @@ export class LmBridge {
   async request(options: LmBridgeRequest): Promise<Completion> {
     const { connection, backoffStrategy = DEFAULT_BACKOFF_STRATEGY } = options;
     const backend = this.backendFactory(connection);
-    console.debug("backoff strategy: %o", backoffStrategy);
+    this.logger.debug("backoff strategy: %o", backoffStrategy);
 
     for (let retries = 0; retries < backoffStrategy.maxRetries; retries++) {
-      console.debug("attempting run with retries: %i", retries);
+      this.logger.debug("attempting run with retries: %i", retries);
 
       try {
         const output = await this.runOnce(backend, options);
@@ -78,11 +84,11 @@ export class LmBridge {
       const jitter = randomInt(backoffHalf);
       const backoff = backoffHalf + jitter;
 
-      console.debug("failed, sleeping for %ims", backoff);
+      this.logger.debug("failed, sleeping for %ims", backoff);
       await setTimeout(backoff);
     }
 
-    console.error("giving up after %i retries", backoffStrategy.maxRetries);
+    this.logger.error("giving up after %i retries", backoffStrategy.maxRetries);
     throw new BackoffError("Too many requests");
   }
 

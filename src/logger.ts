@@ -40,7 +40,7 @@ const consoleLoggerWrapper = <Level extends keyof AgentLogger>(
     | typeof console.debug,
   ...args: Parameters<AgentLogger[Level]>
 ) => {
-  func({ level, message: args[0] }, ...args.slice(1));
+  func(JSON.stringify({ level, message: args[0] }), ...args.slice(1));
 };
 
 export const ConsoleLogger: AgentLogger = {
@@ -53,7 +53,7 @@ export const ConsoleLogger: AgentLogger = {
   debug: (message, ...args) =>
     consoleLoggerWrapper("debug", console.debug, message, ...args),
   verbose: (message, ...args) =>
-    consoleLoggerWrapper("log", console.log, message, ...args),
+    consoleLoggerWrapper("verbose", console.log, message, ...args),
   fatal: (message, ...args) =>
-    consoleLoggerWrapper("error", console.error, message, ...args),
+    consoleLoggerWrapper("fatal", console.error, message, ...args),
 };

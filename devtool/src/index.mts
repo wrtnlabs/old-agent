@@ -100,7 +100,7 @@ Agent Rules:
 - if unable to resolve, escalate to a higher department
 `;
     this.tool.session_starting = async (userInformation, prompt) => {
-      console.log("on-start-session %o", userInformation);
+      ConsoleLogger.log("on-start-session %o", userInformation);
       this.session = await sessionManager.start({
         llmBackendKind: "openai",
         llmApiKey: process.env["OPENAI_API_KEY"]!,
@@ -129,7 +129,7 @@ Agent Rules:
   }
 
   onError(error: Error): void {
-    console.error("Error occured: %o", error);
+    ConsoleLogger.error("Error occured: %o", error);
   }
 
   async onRead(event: ReadEvent): Promise<string> {
@@ -167,11 +167,11 @@ Agent Rules:
   }
 
   async onCommit(event: CommitEvent): Promise<void> {
-    console.log("committed");
+    ConsoleLogger.log("committed");
   }
 
   async onRollback(event: RollbackEvent): Promise<void> {
-    console.log("rolled back");
+    ConsoleLogger.log("rolled back");
   }
 
   onConnectorCall(event: ConnectorCallEvent): Promise<JsonValue> {
@@ -179,7 +179,7 @@ Agent Rules:
   }
 
   onStatistics(event: StatisticsEvent): void {
-    console.info("Statistics: %o", event);
+    ConsoleLogger.log("Statistics: %o", event);
   }
 
   async findFunction(

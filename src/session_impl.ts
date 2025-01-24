@@ -21,6 +21,7 @@ import {
 import { ConnectorFinder } from "./stages/connector_finder";
 import { ConnectorParamGenerator } from "./stages/connector_param_generator";
 import { JsonValue } from "./core/types";
+import { AgentLogger } from "./logger";
 
 export interface SessionInput {
   connection: Connection;
@@ -30,6 +31,7 @@ export interface SessionInput {
   platformInfo: PlatformInfo;
   userContext: InitialInformation;
   initialHistory: ChatHistory;
+  logger: AgentLogger;
 }
 
 export class StageGroup {
@@ -38,12 +40,13 @@ export class StageGroup {
   connectorParamGenerator = new ConnectorParamGenerator();
 
   async run(input: SessionInput, signal?: AbortSignal) {
-    console.info("starting session...");
+    input.logger.log("starting session...");
     input.initialHistory.rollbackToSafePoint();
 
     const dialogEmitter = new DialogEmitter(
       input.initialHistory.clone(),
-      input.delegate
+      input.delegate,
+      input.logger
     );
 
     const state = new SessionState(
@@ -55,6 +58,7 @@ export class StageGroup {
       input.promptSet,
       input.delegate,
       dialogEmitter,
+      input.logger,
       signal
     );
 
@@ -73,7 +77,7 @@ export class StageGroup {
           break;
         }
         const error = new Error("unexpected error", { cause: err });
-        console.error("session ended with an error: %o", error);
+        input.logger.error("session ended with an error: %o", error);
         input.delegate.onError?.(error);
         break;
       }
@@ -93,6 +97,7 @@ class SessionState implements StageContext {
     private _promptSet: PromptSet,
     private _delegate: MetaAgentSessionDelegate,
     private _dialogEmitter: DialogEmitter,
+    public logger: AgentLogger,
     private _signal?: AbortSignal
   ) {}
 

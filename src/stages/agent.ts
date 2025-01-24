@@ -67,11 +67,7 @@ export interface AgentRunFunctionsAction
 export class Agent implements Stage<Agent.Input, Agent.Output> {
   identifier: string = "agent";
 
-  private lmBridge: LmBridge;
-
-  constructor() {
-    this.lmBridge = new LmBridge(TEMPERATURE, false, TOOLS);
-  }
+  constructor() {}
 
   async execute(
     input: Agent.Input,
@@ -103,6 +99,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     ctx: StageContext,
     prompt: AgentPrompt
   ): Promise<AgentAction[]> {
+    const lmBridge = new LmBridge(TEMPERATURE, false, TOOLS, ctx.logger);
     const MAX_RETRY = 5;
 
     let validationFailure: null | {
@@ -112,7 +109,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
 
     outer: for (let retryIndex = 0; retryIndex < MAX_RETRY; retryIndex++) {
       const messages = this.buildMessage(ctx, input, prompt, validationFailure);
-      const response: Completion = await this.lmBridge.request({
+      const response: Completion = await lmBridge.request({
         connection: ctx.llmConnection,
         sessionId: ctx.sessionId,
         stageName: this.identifier,
@@ -122,7 +119,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
       });
 
       if (response.messages.length <= 0) {
-        console.warn("agent response is empty; retrying");
+        ctx.logger.warn("agent response is empty; retrying");
         validationFailure = {
           assistantResponse: {
             role: "assistant",
@@ -152,7 +149,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
           }
         } catch (err) {
           if (err instanceof Error) {
-            console.warn(
+            ctx.logger.warn(
               "agent returned invalid response with %s message; retrying; error=%o",
               message.type,
               err

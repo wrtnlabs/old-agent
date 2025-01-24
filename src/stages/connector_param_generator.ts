@@ -79,11 +79,9 @@ export class ConnectorParamGenerator
 {
   identifier: string = "connector_param_generator";
 
-  private lmBridge: LmBridge;
   private ajv: Ajv;
 
   constructor() {
-    this.lmBridge = new LmBridge(TEMPERATURE, true, []);
     this.ajv = new Ajv();
   }
 
@@ -91,6 +89,7 @@ export class ConnectorParamGenerator
     input: ConnectorParamGenerator.Input,
     context: StageContext
   ): Promise<ConnectorParamGenerator.Output> {
+    const lmBridge = new LmBridge(TEMPERATURE, true, [], context.logger);
     const langCodePrompt = buildLangCodePrompt(context.langCode);
     const userPrompt = buildUserPrompt(
       input.connector,
@@ -101,7 +100,7 @@ export class ConnectorParamGenerator
     let validationPrompt: ValidationFailure | undefined;
 
     outer: for (let retryIndex = 0; retryIndex < MAX_RETRIES; retryIndex++) {
-      console.info(
+      context.logger.log(
         "connector param generator retry_index=%i, validation_prompt=%o",
         retryIndex,
         validationPrompt
@@ -113,7 +112,7 @@ export class ConnectorParamGenerator
         userContextPrompt,
         validationPrompt
       );
-      const response = await this.lmBridge.request({
+      const response = await lmBridge.request({
         connection: context.llmConnection,
         sessionId: context.sessionId,
         stageName: this.identifier,
@@ -127,7 +126,9 @@ export class ConnectorParamGenerator
 
       const message = response.messages.at(0);
       if (message == null) {
-        console.warn("connector param generator response is empty; retrying");
+        context.logger.warn(
+          "connector param generator response is empty; retrying"
+        );
 
         validationPrompt = {
           assistantResponse: "<empty response>",
@@ -136,7 +137,7 @@ export class ConnectorParamGenerator
         continue outer;
       }
       if (message.type !== "text") {
-        console.warn(
+        context.logger.warn(
           "connector param generator response is not text; retrying"
         );
 
@@ -165,7 +166,7 @@ export class ConnectorParamGenerator
           throw new TypeError("expected 'arguments' to be an array");
         }
       } catch (err) {
-        console.warn(
+        context.logger.warn(
           "connector param generator response is not valid JSON; retrying"
         );
 
@@ -177,7 +178,7 @@ export class ConnectorParamGenerator
       }
 
       if (output.arguments.length !== input.connector.parameters.length) {
-        console.warn(
+        context.logger.warn(
           "connector param generator response `arguments` length mismatch; retrying; arguments=%i parameters=%i",
           output.arguments.length,
           input.connector.parameters.length
@@ -201,7 +202,7 @@ export class ConnectorParamGenerator
           .map((err) => `- ${err.instancePath}: ${err.message}`)
           .join("\n");
 
-        console.warn(
+        context.logger.warn(
           "connector param generator response `arguments` validation failed; retrying; errors=%s",
           errors
         );
