@@ -58,7 +58,7 @@ export class Anthropic implements Backend {
 
     const response = await client.messages.create(
       {
-        max_tokens: 0,
+        max_tokens: 4096,
         messages: lmMessages.messages,
         model: connection.kind.model,
         system: lmMessages.systemPrompt,
