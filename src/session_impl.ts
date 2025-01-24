@@ -45,7 +45,8 @@ export class StageGroup {
 
     const dialogEmitter = new DialogEmitter(
       input.initialHistory.clone(),
-      input.delegate
+      input.delegate,
+      input.logger
     );
 
     const state = new SessionState(

@@ -149,7 +149,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
           }
         } catch (err) {
           if (err instanceof Error) {
-            console.warn(
+            ctx.logger.warn(
               "agent returned invalid response with %s message; retrying; error=%o",
               message.type,
               err

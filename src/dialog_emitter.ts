@@ -1,10 +1,12 @@
 import { ChatHistory, Dialog, RollbackRange } from "./chat_history";
 import { MetaAgentSessionDelegate } from "./delegate";
+import { AgentLogger } from "./logger";
 
 export class DialogEmitter {
   constructor(
     private _history: ChatHistory,
-    private delegate: MetaAgentSessionDelegate
+    private delegate: MetaAgentSessionDelegate,
+    private logger: AgentLogger
   ) {}
 
   history(): ChatHistory {
@@ -25,7 +27,7 @@ export class DialogEmitter {
   }
 
   async commit() {
-    console.debug("Committing the chat history");
+    this.logger.debug("Committing the chat history");
     await this.delegate.onCommit?.({});
   }
 }
