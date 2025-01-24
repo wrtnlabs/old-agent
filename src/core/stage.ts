@@ -15,6 +15,7 @@ export interface StageContext {
   sessionId: string;
   langCode: string;
   userContext: InitialInformation;
+  signal?: AbortSignal;
 
   getPrompt(name: string, context?: Record<string, unknown>): Promise<string>;
   allFunctions(): Promise<OpenAiFunctionSummary[]>;

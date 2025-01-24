@@ -102,6 +102,7 @@ export class ConnectorFinder
         sessionId: context.sessionId,
         stageName: this.identifier,
         messages,
+        signal: context.signal,
       });
 
       // context.accumulateUsage

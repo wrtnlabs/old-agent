@@ -37,7 +37,7 @@ export class StageGroup {
   connectorFinder = new ConnectorFinder();
   connectorParamGenerator = new ConnectorParamGenerator();
 
-  async run(input: SessionInput) {
+  async run(input: SessionInput, signal?: AbortSignal) {
     console.info("starting session...");
     input.initialHistory.rollbackToSafePoint();
 
@@ -54,19 +54,23 @@ export class StageGroup {
       input.userContext,
       input.promptSet,
       input.delegate,
-      dialogEmitter
+      dialogEmitter,
+      signal
     );
 
     let previousError: string | undefined;
     let userQuery: string | undefined;
 
-    while (true) {
+    while (!signal?.aborted) {
       try {
         await state.step(previousError, userQuery);
       } catch (err) {
         if (err instanceof StageError) {
           previousError = err.message;
           continue;
+        }
+        if (err instanceof Error && err.name === "AbortError") {
+          break;
         }
         const error = new Error("unexpected error", { cause: err });
         console.error("session ended with an error: %o", error);
@@ -88,7 +92,8 @@ class SessionState implements StageContext {
     private _userContext: InitialInformation,
     private _promptSet: PromptSet,
     private _delegate: MetaAgentSessionDelegate,
-    private _dialogEmitter: DialogEmitter
+    private _dialogEmitter: DialogEmitter,
+    private _signal?: AbortSignal
   ) {}
 
   // #group StageContext implementation
@@ -105,6 +110,9 @@ class SessionState implements StageContext {
   get userContext(): InitialInformation {
     return this._userContext;
   }
+  get signal(): AbortSignal | undefined {
+    return this._signal;
+  }
 
   async getPrompt(
     name: string,
@@ -114,16 +122,21 @@ class SessionState implements StageContext {
   }
 
   async allFunctions(): Promise<OpenAiFunctionSummary[]> {
-    return await this._delegate.queryFunctions({
-      sessionId: this.sessionId,
-    });
+    return await this._delegate.queryFunctions(
+      {
+        sessionId: this.sessionId,
+      },
+      { signal: this.signal }
+    );
   }
 
   async findFunction(
     sessionId: string,
     name: string
   ): Promise<OpenAiFunction | undefined> {
-    return await this._delegate.findFunction(sessionId, name);
+    return await this._delegate.findFunction(sessionId, name, {
+      signal: this.signal,
+    });
   }
 
   // #end
