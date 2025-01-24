@@ -12,6 +12,7 @@ import {
   type OpenAiFunction,
   type OpenAiFunctionSummary,
   type ReadEvent,
+  type RequestOptions,
   type RollbackEvent,
   type StatisticsEvent,
 } from "@wrtnio/agent-os";
@@ -50,6 +51,7 @@ class App implements MetaAgentSessionDelegate {
   session: MetaAgentSession | undefined;
   doc: IHttpOpenAiApplication | undefined;
   abortController = new AbortController();
+  readResolver: ((value: string) => void) | undefined;
 
   constructor() {
     this.tool = new ui.DevTool();
@@ -69,6 +71,9 @@ class App implements MetaAgentSessionDelegate {
       });
       this.session.launch(this.abortController.signal);
     };
+    this.tool.message_accepted = (message) => {
+      this.readResolver?.(message);
+    };
   }
 
   async run() {
@@ -84,17 +89,36 @@ class App implements MetaAgentSessionDelegate {
     console.error("Error occured: %o", error);
   }
 
-  onRead(event: ReadEvent): Promise<string> {
-    throw new Error("Method not implemented.");
+  async onRead(event: ReadEvent): Promise<string> {
+    event.signal?.throwIfAborted();
+    return new Promise((resolve, reject) => {
+      const signal = event.signal;
+      const abortListener = () => {
+        this.readResolver = undefined;
+        signal?.removeEventListener("abort", abortListener);
+        reject(new Error("Aborted"));
+      };
+      signal?.addEventListener("abort", abortListener);
+      this.readResolver = resolve;
+    });
   }
 
   async onMessage(event: MessageEvent): Promise<void> {
+    let message: string;
+    switch (event.dialog.message.type) {
+      case "text":
+        message = event.dialog.message.text;
+        break;
+      default:
+        message = JSON.stringify(event.dialog.message, undefined, 2);
+        break;
+    }
     this.tool.chat_history.push({
       timestamp: new Date().toISOString(),
       dialog: {
         visible: event.dialog.visible,
         speaker: event.dialog.speaker.type,
-        message: JSON.stringify(event.dialog.message),
+        message,
       },
     });
   }
@@ -117,12 +141,18 @@ class App implements MetaAgentSessionDelegate {
 
   async findFunction(
     sessionId: string,
-    name: string
+    name: string,
+    options: RequestOptions
   ): Promise<OpenAiFunction | undefined> {
+    options.signal?.throwIfAborted();
     return this.doc?.functions.find((f) => `${f.method}:${f.path}` === name);
   }
 
-  async queryFunctions(query: FunctionQuery): Promise<OpenAiFunctionSummary[]> {
+  async queryFunctions(
+    query: FunctionQuery,
+    options: RequestOptions
+  ): Promise<OpenAiFunctionSummary[]> {
+    options.signal?.throwIfAborted();
     return this.doc?.functions ?? [];
   }
 }
