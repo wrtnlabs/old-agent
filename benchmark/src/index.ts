@@ -5,6 +5,7 @@ import typia from "typia";
 import { randomUUID } from "crypto";
 import { IScenario } from "./client.agent";
 import { getClientAgent } from "./client.agent";
+import { extractOpenApi } from "./server";
 
 const apiKey = process.env.OPENAI_API_KEY;
 typia.assertGuard<string>(apiKey);
@@ -12,9 +13,10 @@ typia.assertGuard<string>(apiKey);
 (async () => {
   const start = performance.now();
   const [swagger, scenario] = await Promise.all([
-    promises.readFile("./swagger.json", "utf-8").then(JSON.parse),
+    extractOpenApi(),
     promises.readFile("./scenario.json", "utf-8").then(JSON.parse),
   ]);
+
   typia.assertGuard<IScenario>(scenario);
   typia.assertGuard<
     | SwaggerV2.IDocument
@@ -39,4 +41,5 @@ typia.assertGuard<string>(apiKey);
   );
   console.log(evaluationResult);
   console.log(performance.now() - start, "ms");
+  process.exit(0);
 })();
