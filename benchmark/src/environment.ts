@@ -77,6 +77,7 @@ export namespace BenchmarkEnvironment {
       if (value.type === "ask") {
         return value.message;
       }
+
       props.abortController.abort();
       props.resolve(value.message);
       return "";

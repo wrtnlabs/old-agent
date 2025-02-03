@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { IScenario } from "./client.agent";
 import { getClientAgent } from "./client.agent";
 import { extractOpenApi } from "./server";
+import { ReportExporter } from "./report.exporter";
 
 const apiKey = process.env.OPENAI_API_KEY;
 typia.assertGuard<string>(apiKey);
@@ -39,7 +40,9 @@ typia.assertGuard<string>(apiKey);
       throw e;
     })
   );
-  console.log(evaluationResult);
+
+  await ReportExporter.report("openai-1", evaluationResult);
+
   console.log(performance.now() - start, "ms");
   process.exit(0);
 })();

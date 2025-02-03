@@ -5,22 +5,24 @@
   "scripts": {
     "prepare": "ts-patch install",
     "start": "ts-node src/index.ts",
-    "debug": "node --inspect -r ts-node/register src/index.ts"
+    "debug": "node --inspect -r ts-node/register src/index.ts",
+    "clean": "rimraf ./.results && rimraf node_modules && rimraf package-lock.json && npm cache clean --force"
   },
   "author": "",
   "description": "",
   "devDependencies": {
+    "rimraf": "^6.0.1",
     "ts-patch": "^3.3.0",
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "ts-node": "^10.9.2",
     "@elysiajs/node": "^1.2.3",
     "@elysiajs/swagger": "^1.2.0",
     "@samchon/openapi": "^2.4.0",
     "@wrtnio/agent-os": "../wrtnio-agent-os-1.0.0.tgz",
     "@wrtnio/schema": "^3.2.1",
     "elysia": "^1.2.10",
+    "ts-node": "^10.9.2",
     "typia": "^7.6.0"
   }
 }

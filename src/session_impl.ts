@@ -80,9 +80,9 @@ export class StageGroup {
         ) {
           break;
         }
-        const error = new Error("unexpected error", { cause: err });
-        input.logger.error("session ended with an error: %o", error);
-        input.delegate.onError?.(error);
+        const wrappedError = new Error("unexpected error", { cause: err });
+        input.logger.error("session ended with an error: %o", wrappedError);
+        input.delegate.onError?.(wrappedError);
         break;
       }
     }
