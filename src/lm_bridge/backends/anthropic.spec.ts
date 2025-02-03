@@ -1,6 +1,5 @@
 import { describe, test } from "vitest";
-import { LmBridge } from "../lm_bridge";
-import { Tool } from "../inputs/tool";
+import { LmBridge, LmBridgeInit } from "../lm_bridge";
 import {
   testConsecutiveAssistantMessages,
   testNoSysNoJson,
@@ -15,14 +14,8 @@ import { ConsoleLogger } from "../../logger";
 
 const ANTHROPIC_API_KEY = process.env["ANTHROPIC_API_KEY"];
 
-function lmBridge({
-  jsonMode,
-  tools,
-}: {
-  jsonMode: boolean;
-  tools: readonly Tool[];
-}) {
-  return new LmBridge(0.8, jsonMode, tools, ConsoleLogger);
+function lmBridge(options: Pick<LmBridgeInit, "jsonMode" | "tools">) {
+  return new LmBridge({ temperature: 0.8, logger: ConsoleLogger, ...options });
 }
 
 describe.runIf(ANTHROPIC_API_KEY != null)(

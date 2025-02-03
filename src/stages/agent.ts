@@ -99,7 +99,12 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
     ctx: StageContext,
     prompt: AgentPrompt
   ): Promise<AgentAction[]> {
-    const lmBridge = new LmBridge(TEMPERATURE, false, TOOLS, ctx.logger);
+    const lmBridge = new LmBridge({
+      temperature: TEMPERATURE,
+      jsonMode: false,
+      tools: TOOLS,
+      logger: ctx.logger,
+    });
     const MAX_RETRY = 5;
 
     let validationFailure: null | {

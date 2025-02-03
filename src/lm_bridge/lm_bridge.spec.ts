@@ -13,7 +13,7 @@ const DUMMY_SESSION_ID = "279a6fa0-35ad-4605-9916-d8ca074b4354";
 
 describe("LmBridge.request", () => {
   it("should return a completion", async () => {
-    const bridge = new LmBridge(0.2, false, [], ConsoleLogger);
+    const bridge = new LmBridge({ temperature: 0.2, logger: ConsoleLogger });
     const mockBackendFactory = vi.fn(() => ({
       kind: () => DUMMY_CONNECTION.kind,
       makeCompletion: vi.fn(
