@@ -6,7 +6,7 @@ import { Tool, ToolChoice } from "./inputs/tool";
 import { Completion } from "./outputs/completion";
 import { OpenAi } from "./backends/open_ai";
 import { Anthropic } from "./backends/anthropic";
-import { AgentLogger } from "../logger";
+import { AgentLogger, NoopLogger } from "../logger";
 
 export interface BackoffStrategy {
   maxRetries: number;
@@ -46,7 +46,12 @@ export class LmBridge {
         }
       }
     };
-    const { temperature, jsonMode = false, tools = [], logger } = options;
+    const {
+      temperature,
+      jsonMode = false,
+      tools = [],
+      logger = NoopLogger,
+    } = options;
     this.temperature = temperature;
     this.jsonMode = jsonMode;
     this.tools = tools;

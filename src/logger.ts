@@ -57,3 +57,12 @@ export const ConsoleLogger: AgentLogger = {
   fatal: (message, ...args) =>
     consoleLoggerWrapper("fatal", console.error, message, ...args),
 };
+
+export const NoopLogger: AgentLogger = {
+  verbose: () => {},
+  debug: () => {},
+  log: () => {},
+  warn: () => {},
+  error: () => {},
+  fatal: () => {},
+};
