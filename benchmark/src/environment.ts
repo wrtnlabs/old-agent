@@ -5,7 +5,7 @@ import {
   IHttpOpenAiFunction,
 } from "@wrtnio/schema";
 import {
-  ConsoleLogger,
+  AgentLogger,
   Dialog,
   JsonValue,
   MetaAgentSessionDelegate,
@@ -15,8 +15,10 @@ import {
 import { FinishEvaluationResult } from "./client.agent";
 import { app } from "./server";
 import { SchemaProvider } from "./schema.provider";
+import { ExceptionLogger } from "./exception.logger";
 
 export namespace BenchmarkEnvironment {
+  const logger: AgentLogger = ExceptionLogger;
   const getDelegate = (props: {
     abortController: AbortController;
     sessionId: string;
@@ -65,12 +67,12 @@ export namespace BenchmarkEnvironment {
         )
         .flat(),
     onMessage: async (event) => {
-      console.log("onMessage", event);
+      logger.log("onMessage", event);
       props.dialogs.push(event.dialog);
     },
     onRead: async () => {
       const { value } = await props.client.next().catch((e) => {
-        console.error(e);
+        logger.error(e);
         throw e;
       });
 
@@ -175,7 +177,7 @@ export namespace BenchmarkEnvironment {
     //   }));
 
     const manager = new MetaAgentSessionManager({
-      logger: ConsoleLogger,
+      logger: ExceptionLogger,
       promptSet: await NunjucksPromptSet.default(),
     });
 
