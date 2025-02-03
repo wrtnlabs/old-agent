@@ -15,7 +15,13 @@ import { ConsoleLogger } from "../../logger";
 
 const OPENAI_API_KEY = process.env["OPENAI_API_KEY"];
 
-function lmBridge(jsonMode: boolean, tools: readonly Tool[]) {
+function lmBridge({
+  jsonMode,
+  tools,
+}: {
+  jsonMode: boolean;
+  tools: readonly Tool[];
+}) {
   return new LmBridge(0.8, jsonMode, tools, ConsoleLogger);
 }
 

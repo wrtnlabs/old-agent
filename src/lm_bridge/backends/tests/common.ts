@@ -9,13 +9,16 @@ function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
   expect(value).toBeDefined();
 }
 
-export type BuildLmBridge = (jsonMode: boolean, tools: Tool[]) => LmBridge;
+export type BuildLmBridge = (options: {
+  jsonMode: boolean;
+  tools: readonly Tool[];
+}) => LmBridge;
 
 export async function testNoSysNoJson(
   connection: Connection,
   buildLmBridge: BuildLmBridge
 ): Promise<void> {
-  const lmBridge = buildLmBridge(false, []);
+  const lmBridge = buildLmBridge({ jsonMode: false, tools: [] });
   const response = await lmBridge.request({
     connection,
     sessionId: "test_no_sys_no_json",
@@ -44,7 +47,7 @@ export async function testNoSysWithJson(
   connection: Connection,
   buildLmBridge: BuildLmBridge
 ): Promise<void> {
-  const lmBridge = buildLmBridge(true, []);
+  const lmBridge = buildLmBridge({ jsonMode: true, tools: [] });
   const response = await lmBridge.request({
     connection,
     sessionId: "test_no_sys_with_json",
@@ -76,7 +79,7 @@ export async function testWithSysNoJson(
   connection: Connection,
   buildLmBridge: BuildLmBridge
 ): Promise<void> {
-  const lmBridge = buildLmBridge(false, []);
+  const lmBridge = buildLmBridge({ jsonMode: false, tools: [] });
   const response = await lmBridge.request({
     connection,
     sessionId: "test_with_sys_no_json",
@@ -112,7 +115,7 @@ export async function testWithSysWithJson(
   connection: Connection,
   buildLmBridge: BuildLmBridge
 ): Promise<void> {
-  const lmBridge = buildLmBridge(true, []);
+  const lmBridge = buildLmBridge({ jsonMode: true, tools: [] });
   const response = await lmBridge.request({
     connection,
     sessionId: "test_with_sys_with_json",
@@ -151,16 +154,19 @@ export async function testToolUse(
   connection: Connection,
   buildLmBridge: BuildLmBridge
 ): Promise<void> {
-  const lmBridge = buildLmBridge(false, [
-    {
-      name: "add",
-      description: "Add two numbers",
-      parameters: [
-        { name: "a", schema: { type: "number" }, isRequired: true },
-        { name: "b", schema: { type: "number" }, isRequired: true },
-      ],
-    },
-  ]);
+  const lmBridge = buildLmBridge({
+    jsonMode: false,
+    tools: [
+      {
+        name: "add",
+        description: "Add two numbers",
+        parameters: [
+          { name: "a", schema: { type: "number" }, isRequired: true },
+          { name: "b", schema: { type: "number" }, isRequired: true },
+        ],
+      },
+    ],
+  });
   const response = await lmBridge.request({
     connection,
     sessionId: "test_tool_use",
@@ -229,24 +235,27 @@ export async function testParallelToolUse(
   connection: Connection,
   buildLmBridge: BuildLmBridge
 ): Promise<void> {
-  const lmBridge = buildLmBridge(false, [
-    {
-      name: "add",
-      description: "Add two numbers",
-      parameters: [
-        { name: "a", schema: { type: "number" }, isRequired: true },
-        { name: "b", schema: { type: "number" }, isRequired: true },
-      ],
-    },
-    {
-      name: "subtract",
-      description: "Subtract two numbers",
-      parameters: [
-        { name: "a", schema: { type: "number" }, isRequired: true },
-        { name: "b", schema: { type: "number" }, isRequired: true },
-      ],
-    },
-  ]);
+  const lmBridge = buildLmBridge({
+    jsonMode: false,
+    tools: [
+      {
+        name: "add",
+        description: "Add two numbers",
+        parameters: [
+          { name: "a", schema: { type: "number" }, isRequired: true },
+          { name: "b", schema: { type: "number" }, isRequired: true },
+        ],
+      },
+      {
+        name: "subtract",
+        description: "Subtract two numbers",
+        parameters: [
+          { name: "a", schema: { type: "number" }, isRequired: true },
+          { name: "b", schema: { type: "number" }, isRequired: true },
+        ],
+      },
+    ],
+  });
   const response = await lmBridge.request({
     connection,
     sessionId: "test_parallel_tool_use",
@@ -324,7 +333,7 @@ export async function testConsecutiveAssistantMessages(
   connection: Connection,
   buildLmBridge: BuildLmBridge
 ): Promise<void> {
-  const lmBridge = buildLmBridge(false, []);
+  const lmBridge = buildLmBridge({ jsonMode: false, tools: [] });
   const response = await lmBridge.request({
     connection,
     sessionId: "test_consecutive_assistant_messages",
