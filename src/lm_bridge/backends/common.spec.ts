@@ -171,6 +171,7 @@ export async function testToolUse(
         },
       },
     ],
+    toolChoice: { type: "any" },
   });
   expect(response.messages).toHaveLength(1);
 
@@ -181,6 +182,8 @@ export async function testToolUse(
   }
 
   expect(message.toolName).not.toHaveLength(0);
+  expect(message.arguments).toHaveProperty("a");
+  expect(message.arguments).toHaveProperty("b");
   const { a: lhs, b: rhs } = message.arguments as { a: number; b: number };
   const result = lhs + rhs;
 
@@ -255,6 +258,7 @@ export async function testParallelToolUse(
         },
       },
     ],
+    toolChoice: { type: "any" },
   });
   expect(response.messages).toHaveLength(1);
 

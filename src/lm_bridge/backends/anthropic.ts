@@ -10,6 +10,7 @@ import { Completion, CompletionMessage } from "../outputs/completion";
 import { Tool, ToolParameter } from "../inputs/tool";
 import AnthropicSdk from "@anthropic-ai/sdk";
 import {
+  MessageCreateParams,
   MessageParam,
   TextBlockParam,
   Tool as AnthropicTool,
@@ -33,13 +34,14 @@ export class Anthropic implements Backend {
     const lmMessages = buildMessages(messages);
     const tools = buildTools(options.tools);
 
-    const toolChoice = (() => {
+    const toolChoice = ((): Pick<MessageCreateParams, "tool_choice"> => {
       switch (options.toolChoice?.type) {
         case "any": {
           return {
             tool_choice: {
               type: "any",
-            } as const,
+              disable_parallel_tool_use: true,
+            },
           };
         }
         case "one": {
@@ -47,7 +49,8 @@ export class Anthropic implements Backend {
             tool_choice: {
               type: "tool",
               name: options.toolChoice.name,
-            } as const,
+              disable_parallel_tool_use: true,
+            },
           };
         }
         default: {
@@ -209,9 +212,8 @@ function buildCompletionMessages(
           type: "tool_use",
           toolUseId: v.id,
           toolName: v.name,
-          arguments: JSON.stringify(
-            typeof v.input === "string" ? JSON.parse(v.input) : v.input
-          ),
+          arguments:
+            typeof v.input === "string" ? JSON.parse(v.input) : v.input,
         };
       }
     }
