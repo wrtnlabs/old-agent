@@ -1,18 +1,16 @@
 import * as typia from "typia";
 import { expect } from "vitest";
 import { Connection } from "../../backend";
-import { LmBridge } from "../../lm_bridge";
-import { Tool } from "../../inputs/tool";
+import { LmBridge, LmBridgeInit } from "../../lm_bridge";
 import { Message } from "../../inputs/message";
 
 function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
   expect(value).toBeDefined();
 }
 
-export type BuildLmBridge = (options: {
-  jsonMode: boolean;
-  tools: readonly Tool[];
-}) => LmBridge;
+export type BuildLmBridge = (
+  options: Pick<LmBridgeInit, "jsonMode" | "tools">
+) => LmBridge;
 
 export async function testNoSysNoJson(
   connection: Connection,
