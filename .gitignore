@@ -4,3 +4,4 @@ coverage
 .infisical.json
 *.tgz
 .envrc
+.turbo
