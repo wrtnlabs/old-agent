@@ -25,3 +25,13 @@ cd benchmark
 npm install
 npm run start
 ```
+
+## How to run tests?
+
+```bash
+# if not present, related tests will be skipped
+export ANTHROPIC_API_KEY="<your-api-key>"
+export OPENAI_API_KEY="<your-api-key>"
+
+npm run test
+```
