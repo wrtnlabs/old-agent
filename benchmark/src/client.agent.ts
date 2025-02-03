@@ -66,11 +66,17 @@ export const getClientAgent = (apiKey: string, scenario: IScenario) => {
       const message = chosen.message
         .content!.replace("<tool>", "")
         .replace("</tool>", "");
-      const maybeTranlated = (() => {
+      const maybeTranlated = ((): FinishEvaluationResult | undefined => {
         try {
           const object = JSON.parse(message);
           if ("arguments" in object) {
             return assert<FinishEvaluationResult>(object.arguments);
+          } else if (
+            "type" in object &&
+            object.type === "tool_use" &&
+            "inputs" in object
+          ) {
+            return assert<FinishEvaluationResult>(object.inputs);
           } else {
             return assert<FinishEvaluationResult>(object);
           }

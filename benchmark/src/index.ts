@@ -41,7 +41,10 @@ typia.assertGuard<string>(apiKey);
     })
   );
 
-  await ReportExporter.report("openai-1", evaluationResult);
+  await ReportExporter.report({
+    name: "openai-1",
+    result: evaluationResult,
+  });
 
   console.log(performance.now() - start, "ms");
   process.exit(0);

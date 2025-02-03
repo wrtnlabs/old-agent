@@ -1,12 +1,11 @@
+import { JsonValue } from "@wrtnio/agent-os";
 import { FinishEvaluationResult } from "./client.agent";
 import { promises } from "fs";
 
 export namespace ReportExporter {
   const DIRECTORY = "./.results";
-  export const report = async (
-    name: string,
-    result: FinishEvaluationResult
-  ) => {
+  export const report = async (props: ReportExporter.Props) => {
+    const { name, result } = props;
     await promises.mkdir(DIRECTORY, { recursive: true });
     await Promise.all([
       promises.writeFile(
@@ -17,7 +16,7 @@ export namespace ReportExporter {
     ]);
   };
 
-  const markdown = (name: string, result: FinishEvaluationResult) => {
+  const markdown = (name: string, result: Props["result"]) => {
     return `# Benchmark Report for \`${name}\`
     
 ## Cost
@@ -26,25 +25,42 @@ export namespace ReportExporter {
 
 ## Evaluation
 
-Final score: \`${result.score}\` / 100
+Final score: \`${result.message.score}\` / 100
 
 ### Reasoning
 
-${result.reasoning}
+${result.message.reasoning}
 
 ### Detailed evaluations
 
-${result.evaluations.map((v) => `- ${v.criteria}: ${v.evaluation}`).join("\n")}
+${result.message.evaluations.map((v) => `- ${v.criteria}: ${v.evaluation}`).join("\n")}
 
 ### Final decision
 
-${result.final_decision}
+${result.message.final_decision}
 
 ## Conversation Log
 
-\`\`\`
-TODO
+\`\`\`json
+[
+  ${result.conversation.map((v) => JSON.stringify(v)).join(",\n  ")}
+]
 \`\`\`
     `;
+  };
+
+  export type Props = {
+    name: string;
+    result: {
+      message: FinishEvaluationResult;
+      conversation: ConversationLog[];
+    };
+  };
+
+  export type ConversationLog = {
+    event: string;
+    message: string;
+  } & {
+    [k: string]: JsonValue;
   };
 }
