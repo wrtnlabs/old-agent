@@ -1,8 +1,13 @@
-import { expect } from "vitest";
+import { expect, test } from "vitest";
 import { Connection } from "../backend";
 import { LmBridge } from "../lm_bridge";
 import { Tool } from "../inputs/tool";
 import { Message } from "../inputs/message";
+
+// If this is omitted, Vitest marks this file as a failed test suite due to the lack of tests.
+test("common", () => {
+  expect(true).toBe(true);
+});
 
 function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
   expect(value).toBeDefined();
