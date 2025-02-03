@@ -9,7 +9,7 @@ import {
   testToolUse,
   testWithSysNoJson,
   testWithSysWithJson,
-} from "./common.spec";
+} from "./tests/common";
 import { Connection, ClaudeModel } from "../backend";
 import { ConsoleLogger } from "../../logger";
 
