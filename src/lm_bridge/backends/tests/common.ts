@@ -1,3 +1,4 @@
+import * as typia from "typia";
 import { expect } from "vitest";
 import { Connection } from "../../backend";
 import { LmBridge } from "../../lm_bridge";
@@ -182,9 +183,8 @@ export async function testToolUse(
   }
 
   expect(message.toolName).not.toHaveLength(0);
-  expect(message.arguments).toHaveProperty("a");
-  expect(message.arguments).toHaveProperty("b");
-  const { a: lhs, b: rhs } = message.arguments as { a: number; b: number };
+  typia.assertGuard<{ a: number; b: number }>(message.arguments);
+  const { a: lhs, b: rhs } = message.arguments;
   const result = lhs + rhs;
 
   const messages: Message[] = [
@@ -269,18 +269,18 @@ export async function testParallelToolUse(
   }
 
   expect(message.toolName).not.toHaveLength(0);
-  const { a: lhs, b: rhs } = message.arguments as { a: number; b: number };
-  let result: number;
-  switch (message.toolName) {
-    case "add":
-      result = lhs + rhs;
-      break;
-    case "subtract":
-      result = lhs - rhs;
-      break;
-    default:
-      expect.fail("add or subtract", message.toolName);
-  }
+  typia.assertGuard<{ a: number; b: number }>(message.arguments);
+  const { a: lhs, b: rhs } = message.arguments;
+  const result = (() => {
+    switch (message.toolName) {
+      case "add":
+        return lhs + rhs;
+      case "subtract":
+        return lhs - rhs;
+      default:
+        expect.fail("add or subtract", message.toolName);
+    }
+  })();
 
   const messages: Message[] = [
     {
