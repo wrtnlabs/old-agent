@@ -11,11 +11,12 @@ import {
   testWithSysWithJson,
 } from "./common.spec";
 import { Connection, OpenAiModel } from "../backend";
+import { ConsoleLogger } from "../../logger";
 
 const OPENAI_API_KEY = process.env["OPENAI_API_KEY"];
 
 function lmBridge(jsonMode: boolean, tools: readonly Tool[]) {
-  return new LmBridge(0.8, jsonMode, tools);
+  return new LmBridge(0.8, jsonMode, tools, ConsoleLogger);
 }
 
 describe.runIf(OPENAI_API_KEY != null)("OpenAi", () => {
