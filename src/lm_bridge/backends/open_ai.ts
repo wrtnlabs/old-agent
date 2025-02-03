@@ -49,10 +49,6 @@ export class OpenAi implements Backend {
         };
         break;
       }
-      default: {
-        tool_choice = undefined;
-        break;
-      }
     }
 
     const response = await client.chat.completions.create(
@@ -61,9 +57,8 @@ export class OpenAi implements Backend {
         temperature: options.temperature,
         frequency_penalty: options.frequencyPenalty,
         messages: openAiMessages,
-        response_format: options.jsonMode ? { type: "json_object" } : undefined,
-        tools,
-        parallel_tool_calls: false,
+        ...(options.jsonMode && { response_format: { type: "json_object" } }),
+        ...(tools.length > 0 && { tools, parallel_tool_calls: false }),
         tool_choice,
       },
       {

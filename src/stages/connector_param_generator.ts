@@ -89,7 +89,12 @@ export class ConnectorParamGenerator
     input: ConnectorParamGenerator.Input,
     context: StageContext
   ): Promise<ConnectorParamGenerator.Output> {
-    const lmBridge = new LmBridge(TEMPERATURE, true, [], context.logger);
+    const lmBridge = new LmBridge({
+      temperature: TEMPERATURE,
+      jsonMode: true,
+      tools: [],
+      logger: context.logger,
+    });
     const langCodePrompt = buildLangCodePrompt(context.langCode);
     const userPrompt = buildUserPrompt(
       input.connector,

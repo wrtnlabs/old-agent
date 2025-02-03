@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { LmBridge } from "./lm_bridge";
 import { Connection } from "./backend";
 import { Completion } from "./outputs/completion";
+import { ConsoleLogger } from "../logger";
 
 const DUMMY_CONNECTION: Connection = {
   kind: { kind: "openai", model: "gpt-4o-2024-11-20" },
@@ -12,7 +13,7 @@ const DUMMY_SESSION_ID = "279a6fa0-35ad-4605-9916-d8ca074b4354";
 
 describe("LmBridge.request", () => {
   it("should return a completion", async () => {
-    const bridge = new LmBridge(0.2, false, []);
+    const bridge = new LmBridge({ temperature: 0.2, logger: ConsoleLogger });
     const mockBackendFactory = vi.fn(() => ({
       kind: () => DUMMY_CONNECTION.kind,
       makeCompletion: vi.fn(

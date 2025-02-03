@@ -30,13 +30,9 @@ export class LmBridge {
   public temperature: number;
   public jsonMode: boolean;
   public tools: readonly Tool[];
+  public logger: AgentLogger;
 
-  constructor(
-    temperature: number,
-    jsonMode: boolean,
-    tools: readonly Tool[],
-    public logger: AgentLogger
-  ) {
+  constructor(options: LmBridgeInit) {
     this.backendFactory = (connection) => {
       switch (connection.kind.kind) {
         case "openai": {
@@ -50,9 +46,11 @@ export class LmBridge {
         }
       }
     };
+    const { temperature, jsonMode = false, tools = [], logger } = options;
     this.temperature = temperature;
     this.jsonMode = jsonMode;
     this.tools = tools;
+    this.logger = logger;
   }
 
   async request(options: LmBridgeRequest): Promise<Completion> {
@@ -175,6 +173,13 @@ export class LmBridge {
     }
     return response;
   }
+}
+
+export interface LmBridgeInit {
+  temperature: number;
+  jsonMode?: boolean;
+  tools?: readonly Tool[];
+  logger: AgentLogger;
 }
 
 export interface LmBridgeRequest {

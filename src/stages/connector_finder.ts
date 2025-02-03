@@ -74,7 +74,12 @@ export class ConnectorFinder
     input: ConnectorFinderInput,
     context: StageContext
   ): Promise<ConnectorFinderOutput> {
-    const lmBridge = new LmBridge(TEMPERATURE, true, [], context.logger);
+    const lmBridge = new LmBridge({
+      temperature: TEMPERATURE,
+      jsonMode: true,
+      tools: [],
+      logger: context.logger,
+    });
     const systemPrompt = await context.getPrompt("v2-connector-finder");
     const inputPrompt = `<request>\n${JSON.stringify(input)}\n</request>`;
     const connectorList = await context.allFunctions();
