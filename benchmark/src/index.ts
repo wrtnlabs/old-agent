@@ -5,6 +5,8 @@ import typia from "typia";
 import { randomUUID } from "crypto";
 import { IScenario } from "./client.agent";
 import { getClientAgent } from "./client.agent";
+import { extractOpenApi } from "./server";
+import { ReportExporter } from "./report.exporter";
 
 const apiKey = process.env.OPENAI_API_KEY;
 typia.assertGuard<string>(apiKey);
@@ -12,9 +14,10 @@ typia.assertGuard<string>(apiKey);
 (async () => {
   const start = performance.now();
   const [swagger, scenario] = await Promise.all([
-    promises.readFile("./swagger.json", "utf-8").then(JSON.parse),
+    extractOpenApi(),
     promises.readFile("./scenario.json", "utf-8").then(JSON.parse),
   ]);
+
   typia.assertGuard<IScenario>(scenario);
   typia.assertGuard<
     | SwaggerV2.IDocument
@@ -25,17 +28,21 @@ typia.assertGuard<string>(apiKey);
 
   const evaluationResult = await BenchmarkEnvironment.get([
     OpenApi.convert(swagger),
-  ])({
-    model: "openai",
-    apiKey: apiKey,
-    sessionId: randomUUID(),
-    platformInfo: scenario.platform.prompt,
-    initialInformation: scenario.customer.user_context,
-  })(getClientAgent(apiKey, scenario)).catch((e) => {
-    console.error(e);
-    throw e;
-  });
+  ]).then((fn) =>
+    fn({
+      model: "openai",
+      apiKey: apiKey,
+      sessionId: randomUUID(),
+      platformInfo: scenario.platform.prompt,
+      initialInformation: scenario.customer.user_context,
+    })(getClientAgent(apiKey, scenario)).catch((e) => {
+      console.error(e);
+      throw e;
+    })
+  );
 
-  console.log(evaluationResult);
+  await ReportExporter.report("openai-1", evaluationResult);
+
   console.log(performance.now() - start, "ms");
+  process.exit(0);
 })();
