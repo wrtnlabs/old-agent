@@ -1,10 +1,75 @@
 import { Dialog } from "@wrtnio/agent-os";
 import { BenchmarkEnvironment } from "./environment";
 import OpenAI from "openai";
-import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { assert } from "typia";
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from "openai/resources/chat/completions";
+import typia from "typia";
+import { FunctionParameters } from "openai/resources/shared";
+
+interface FinishEvaluateMessageType {
+  /**
+   * @title type
+   * @description tool names
+   */
+  type: "finish_evaluation";
+  /**
+   * @title reasoning
+   * @description the reason why you evaluate the agent's performance
+   */
+  reasoning: string;
+  /**
+   * @title evaluations
+   * @description the evaluations of the agent's performance
+   */
+  evaluations: {
+    /**
+     * @title criteria
+     * @description the criteria to be evaluated
+     */
+    criteria: string;
+    /**
+     * @title evaluation
+     * @description the evaluation of the criteria
+     * @enum yes, no
+     */
+    evaluation: "yes" | "no";
+  }[];
+  /**
+   * @title final_decision
+   * @description the final decision of the evaluation
+   */
+  final_decision: string;
+  /**
+   * @title score
+   * @description the score of the evaluation
+   */
+  score: number;
+}
+export type FinishEvaluationResult = Exclude<FinishEvaluateMessageType, "type">;
+
+const tools: ChatCompletionTool[] = typia.llm
+  .applicationOfValidate<
+    {
+      call(input: FinishEvaluateMessageType): void;
+    },
+    "chatgpt"
+  >()
+  .functions.map(
+    (func): ChatCompletionTool => ({
+      type: "function",
+      function: {
+        name: func.name,
+        description: func.description,
+        parameters: func.parameters as unknown as FunctionParameters,
+      },
+    })
+  );
 
 export interface IScenario {
+  name: string;
+  connector_base_url?: string;
   platform: {
     prompt: string;
   };
@@ -50,6 +115,7 @@ export const getClientAgent = (apiKey: string, scenario: IScenario) => {
           content: JSON.stringify(v.message),
         })),
       ],
+      tools,
     });
 
   return async function* (
@@ -62,34 +128,33 @@ export const getClientAgent = (apiKey: string, scenario: IScenario) => {
   > {
     while (true) {
       const response = await askToLlm(dialogs);
-      const chosen = response.choices[0];
-      const message = chosen.message
-        .content!.replace("<tool>", "")
-        .replace("</tool>", "");
+      const chosen = response.choices[0].message;
+
       const maybeTranlated = ((): FinishEvaluationResult | undefined => {
         try {
-          const object = JSON.parse(message);
-          if ("arguments" in object) {
-            return assert<FinishEvaluationResult>(object.arguments);
-          } else if (
-            "type" in object &&
-            object.type === "tool_use" &&
-            "inputs" in object
-          ) {
-            return assert<FinishEvaluationResult>(object.inputs);
-          } else {
-            return assert<FinishEvaluationResult>(object);
+          const validTool = typia.json.isParse<FinishEvaluateMessageType>(
+            chosen.tool_calls?.at(0)?.function.arguments ?? "{}"
+          );
+          if (!!validTool) {
+            return validTool;
           }
-        } catch {
-          return undefined;
-        }
+
+          const response =
+            chosen.content === null
+              ? null
+              : typia.json.isParse<FinishEvaluationResult>(chosen.content);
+          if (!!response) {
+            return response;
+          }
+        } catch {}
+        return undefined;
       })();
 
       if (maybeTranlated) {
         return { type: "finish", message: maybeTranlated };
       }
 
-      yield { type: "ask", message: chosen.message.content! };
+      yield { type: "ask", message: chosen.content! };
     }
   };
 };
@@ -146,13 +211,3 @@ Example Arguments:
 }
 </tool>
 `;
-
-export type FinishEvaluationResult = {
-  reasoning: string;
-  evaluations: {
-    criteria: string;
-    evaluation: string;
-  }[];
-  final_decision: string;
-  score: number;
-};

@@ -5,14 +5,22 @@ import { promises } from "fs";
 export namespace ReportExporter {
   const DIRECTORY = "./.results";
   export const report = async (props: ReportExporter.Props) => {
-    const { name, result } = props;
-    await promises.mkdir(DIRECTORY, { recursive: true });
+    const [additionalDirectory, name] = (() => {
+      const splited = props.name.split("/");
+      return [splited.slice(0, -1).join("/"), splited.at(-1)];
+    })();
+    await promises.mkdir(`${DIRECTORY}/${additionalDirectory}`, {
+      recursive: true,
+    });
     await Promise.all([
       promises.writeFile(
-        `${DIRECTORY}/${name}.raw.json`,
-        JSON.stringify(result, null, 2)
+        `${DIRECTORY}/${additionalDirectory}/${name}.raw.json`,
+        JSON.stringify(props.result, null, 2)
       ),
-      promises.writeFile(`${DIRECTORY}/${name}.md`, markdown(name, result)),
+      promises.writeFile(
+        `${DIRECTORY}/${additionalDirectory}/${name}.md`,
+        markdown(props.name, props.result)
+      ),
     ]);
   };
 
@@ -42,9 +50,7 @@ ${result.message.final_decision}
 ## Conversation Log
 
 \`\`\`json
-[
-  ${result.conversation.map((v) => JSON.stringify(v)).join(",\n  ")}
-]
+[\t${result.conversation.map((v) => JSON.stringify(v)).join(",\n\t")}\n]
 \`\`\`
     `;
   };

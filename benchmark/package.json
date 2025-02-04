@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "ts-patch install",
-    "start": "ts-node src/index.ts",
+    "start": "rimraf ./.results && ts-node src/index.ts",
     "debug": "node --inspect -r ts-node/register src/index.ts",
     "clean": "rimraf ./.results && rimraf node_modules && rimraf package-lock.json && npm cache clean --force"
   },

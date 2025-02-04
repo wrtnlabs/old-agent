@@ -6,7 +6,6 @@ import {
 } from "@wrtnio/schema";
 import {
   AgentLogger,
-  ConsoleLogger,
   Dialog,
   JsonValue,
   MetaAgentSessionDelegate,
@@ -14,13 +13,13 @@ import {
   NunjucksPromptSet,
 } from "@wrtnio/agent-os";
 import { FinishEvaluationResult } from "./client.agent";
-import { app } from "./server";
+
 import { SchemaProvider } from "./schema.provider";
 import { ExceptionLogger } from "./exception.logger";
 import { ReportExporter } from "./report.exporter";
 
 export namespace BenchmarkEnvironment {
-  const logger: AgentLogger = ConsoleLogger;
+  const logger: AgentLogger = ExceptionLogger;
 
   const getDelegate = (props: {
     abortController: AbortController;
@@ -34,13 +33,14 @@ export namespace BenchmarkEnvironment {
     >;
     dialogs: Dialog[];
     client: AsyncGenerator<ClientMessageType, ClientMessageType, void>;
+    connectorBaseUrl: string;
     resolve: (props: ReportExporter.Props["result"]) => void;
   }): MetaAgentSessionDelegate =>
     (() => {
       const conversation: ReportExporter.ConversationLog[] = [];
       return {
         findFunction: async (_, name) => {
-          const [method, address] = name.split("/");
+          const [method, address] = name.split(":");
           const [id, path] = [
             address.split("/")[0],
             address.split("/").slice(1).join("/"),
@@ -63,18 +63,19 @@ export namespace BenchmarkEnvironment {
             description: func.description,
           };
         },
-        queryFunctions: async (_q) =>
-          Array.from(props.controllerMap)
+        queryFunctions: async (_q) => {
+          return Array.from(props.controllerMap)
             .map(([id, controller]) =>
               controller.application.functions.map((func) => ({
-                ...func,
+                method: func.method,
                 path: `${id}/${func.path}`,
+                description: func.description,
               }))
             )
-            .flat(),
+            .flat();
+        },
         onMessage: async (event) => {
-          logger.log("onMessage", event);
-
+          logger.verbose("onMessage", event);
           if (event.dialog.speaker.type === "user") {
             return;
           }
@@ -132,6 +133,7 @@ export namespace BenchmarkEnvironment {
               message: value.message,
               conversation: conversation,
             });
+            logger.verbose("evaluation finished", value.message);
             return "";
           }
 
@@ -144,9 +146,11 @@ export namespace BenchmarkEnvironment {
             event: "onRead",
             message: value.message,
           });
+          logger.verbose("onRead", value.message);
           return value.message;
         },
         onConnectorCall: async (event) => {
+          console.log("onConnectorCall", event);
           const { controller, func, separated, host } = (() => {
             const controllerId = event.function.path.split("/")[0];
             const localPath = event.function.path.split("/").slice(1).join("/");
@@ -166,8 +170,9 @@ export namespace BenchmarkEnvironment {
 
             // GET HOST INFO
             const host: string | undefined = (() => {
-              const servers: OpenApi.IServer[] =
-                func.operation().servers ?? controller.swagger.servers ?? [];
+              const servers: OpenApi.IServer[] = [
+                { url: props.connectorBaseUrl },
+              ];
               const at = (index: number): string | undefined =>
                 servers.at(index)?.url;
               return at(1) ?? at(0);
@@ -236,10 +241,6 @@ export namespace BenchmarkEnvironment {
         { application: SchemaProvider.transform(s), swagger: s },
       ])
     );
-    //   .functions.map((f) => ({
-    //     ...f,
-    //     parameters: f.separated?.llm.map((p) => p.schema),
-    //   }));
 
     const manager = new MetaAgentSessionManager({
       logger: ExceptionLogger,
@@ -263,6 +264,7 @@ export namespace BenchmarkEnvironment {
       sessionId: string;
       platformInfo: string;
       initialInformation: InitialInformation;
+      connectorBaseUrl: string;
     }) =>
     async (
       getClient: (
@@ -270,7 +272,6 @@ export namespace BenchmarkEnvironment {
         dialogs: Dialog[]
       ) => AsyncGenerator<ClientMessageType, ClientMessageType, void>
     ) => {
-      app.listen(3000);
       const dialogs: Dialog[] = [];
       const client = getClient(props.sessionId, dialogs);
       return await new Promise(
@@ -292,6 +293,7 @@ export namespace BenchmarkEnvironment {
               dialogs,
               client,
               resolve,
+              connectorBaseUrl: props.connectorBaseUrl,
             }),
           });
           await session.launch(abortController.signal);

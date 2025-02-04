@@ -2,6 +2,11 @@ import workerThreads from "worker_threads";
 import { register } from "ts-node";
 import { app } from "./samchon_rhythmical_instrument";
 
+export const extractConnectorOpenApi = async () => {
+  return fetch("https://wrtnio.github.io/connectors/swagger/swagger.json").then(
+    (v) => v.json()
+  );
+};
 export const extractOpenApi = async () => {
   const worker = new workerThreads.Worker("./src/server/util.ts", {
     execArgv: [
