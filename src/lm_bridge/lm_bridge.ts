@@ -7,6 +7,7 @@ import { Completion } from "./outputs/completion";
 import { OpenAi } from "./backends/open_ai";
 import { Anthropic } from "./backends/anthropic";
 import { AgentLogger, NoopLogger } from "../logger";
+import { stringify } from "typia/lib/json";
 
 export interface BackoffStrategy {
   maxRetries: number;
@@ -31,6 +32,7 @@ export class LmBridge {
   public jsonMode: boolean;
   public tools: readonly Tool[];
   public logger: AgentLogger;
+  public hasCostLog: boolean;
 
   constructor(options: LmBridgeInit) {
     this.backendFactory = (connection) => {
@@ -56,6 +58,7 @@ export class LmBridge {
     this.jsonMode = jsonMode;
     this.tools = tools;
     this.logger = logger;
+    this.hasCostLog = !!options.hasCostLog;
   }
 
   async request(options: LmBridgeRequest): Promise<Completion> {
@@ -123,6 +126,18 @@ export class LmBridge {
       }
     );
 
+    if (this.hasCostLog) {
+      this.logger.log(
+        stringify({
+          region: "",
+          origin: "",
+          model_name: backend.kind().model,
+          input_tokens: response.usage.inputTokens,
+          output_tokens: response.usage.outputTokens,
+          created_at: new Date().toISOString(),
+        })
+      );
+    }
     // TODO: handle HTTP 429 Too Many Requests
 
     if (response.isTruncated) {
@@ -185,6 +200,7 @@ export interface LmBridgeInit {
   jsonMode?: boolean;
   tools?: readonly Tool[];
   logger: AgentLogger;
+  hasCostLog?: boolean;
 }
 
 export interface LmBridgeRequest {

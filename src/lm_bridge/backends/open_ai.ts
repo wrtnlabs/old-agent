@@ -51,6 +51,7 @@ export class OpenAi implements Backend {
       }
     }
 
+    const startTime = performance.now();
     const response = await client.chat.completions.create(
       {
         model: connection.kind.model,
@@ -65,6 +66,7 @@ export class OpenAi implements Backend {
         signal: options.signal,
       }
     );
+    const endTime = performance.now();
     const {
       id,
       choices: [choice],
@@ -83,6 +85,7 @@ export class OpenAi implements Backend {
         outputTokens: usage?.completion_tokens ?? 0,
       },
       isTruncated: choice.finish_reason === "length",
+      modelResponseTime: endTime - startTime,
     };
   }
 }

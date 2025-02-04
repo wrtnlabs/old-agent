@@ -58,7 +58,7 @@ export class Anthropic implements Backend {
         }
       }
     })();
-
+    const startTime = performance.now();
     const response = await client.messages.create(
       {
         max_tokens: 4096,
@@ -73,13 +73,14 @@ export class Anthropic implements Backend {
         signal: options.signal,
       }
     );
-
+    const endTime = performance.now();
     const { id, content, model, usage, stop_reason } = response;
 
     return {
       completionId: id,
       model,
       messages: buildCompletionMessages(content),
+      modelResponseTime: endTime - startTime,
       usage: {
         inputTokens: usage?.input_tokens ?? 0,
         outputTokens: usage?.output_tokens ?? 0,
