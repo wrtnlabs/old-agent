@@ -83,7 +83,7 @@ export class ConnectorFinder
     const systemPrompt = await context.getPrompt("v2-connector-finder");
     const inputPrompt = `<request>\n${JSON.stringify(input)}\n</request>`;
     const connectorList = await context.allFunctions();
-    const connectorListPrompt = `<connector-list>\n${JSON.stringify(connectorList)}</connector-list>`;
+    const connectorListPrompt = `<connector-list>\n${JSON.stringify(connectorList)}\n</connector-list>`;
     let validationPrompt: ValidationFailure | undefined;
 
     outer: for (let retryIndex = 0; retryIndex < MAX_RETRIES; retryIndex++) {
@@ -155,17 +155,20 @@ export class ConnectorFinder
 
       const connectors: OpenAiFunction[] = [];
 
-      for (const id in output.connector_ids) {
-        const connector = await context.findFunction(context.sessionId, id);
-        if (connector == null) {
+      for (const connector of output.connectors) {
+        const func = await context.findFunction(
+          context.sessionId,
+          `${connector.method}:${connector.path}`
+        );
+        if (func == null) {
           context.logger.warn(
-            "connector finder response contains an invalid connector id `%s`; retrying",
-            id
+            "connector finder response contains an invalid connector `%o`; retrying",
+            connector
           );
 
           validationPrompt = {
             assistantResponse: message.text,
-            validationPrompt: `your response is containing an invalid connector id \`${id}\`; which does not exist in the list of available connectors`,
+            validationPrompt: `your response is containing an invalid connector \`${connector}\`; which does not exist in the list of available connectors`,
           };
           continue outer;
         }
