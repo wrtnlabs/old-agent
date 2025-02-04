@@ -85,7 +85,7 @@ export class OpenAi implements Backend {
         outputTokens: usage?.completion_tokens ?? 0,
       },
       isTruncated: choice.finish_reason === "length",
-      modelResponseTime: endTime - startTime,
+      modelResponseMs: endTime - startTime,
     };
   }
 }

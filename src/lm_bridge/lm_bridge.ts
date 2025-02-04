@@ -111,6 +111,7 @@ export class LmBridge {
       toolChoice,
       signal,
     } = options;
+
     const response = await backend.makeCompletion(
       connection,
       sessionId,
@@ -126,18 +127,6 @@ export class LmBridge {
       }
     );
 
-    if (this.hasCostLog) {
-      this.logger.log(
-        stringify({
-          region: "",
-          origin: "",
-          model_name: backend.kind().model,
-          input_tokens: response.usage.inputTokens,
-          output_tokens: response.usage.outputTokens,
-          created_at: new Date().toISOString(),
-        })
-      );
-    }
     // TODO: handle HTTP 429 Too Many Requests
 
     if (response.isTruncated) {
@@ -191,6 +180,21 @@ export class LmBridge {
         }
       }
     }
+
+    if (this.hasCostLog) {
+      this.logger.log(
+        stringify({
+          region: "",
+          origin: "",
+          model_name: backend.kind().model,
+          input_tokens: response.usage.inputTokens,
+          output_tokens: response.usage.outputTokens,
+          created_at: new Date().toISOString(),
+          model_response_ms: response.modelResponseMs,
+        })
+      );
+    }
+
     return response;
   }
 }

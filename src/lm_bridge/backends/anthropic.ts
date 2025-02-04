@@ -80,7 +80,7 @@ export class Anthropic implements Backend {
       completionId: id,
       model,
       messages: buildCompletionMessages(content),
-      modelResponseTime: endTime - startTime,
+      modelResponseMs: endTime - startTime,
       usage: {
         inputTokens: usage?.input_tokens ?? 0,
         outputTokens: usage?.output_tokens ?? 0,

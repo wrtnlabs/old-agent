@@ -8,7 +8,7 @@ export interface Completion {
   messages: CompletionMessage[];
   usage: Usage;
   isTruncated: boolean;
-  modelResponseTime: number;
+  modelResponseMs: number;
 }
 
 export type CompletionMessage =
