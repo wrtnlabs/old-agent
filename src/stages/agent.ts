@@ -12,8 +12,9 @@ import { PlatformInfo } from "../session";
 import { TOOLS } from "./agent/tools";
 import { buildLangCodePrompt } from "./lang_code_prompt";
 import { Message } from "../lm_bridge/inputs/message";
-import { validate } from "typia";
+import typia, { validate } from "typia";
 import { buildUserContextPrompt } from "./user_context_prompt";
+import { IHttpLlmFunction, ILlmSchema } from "@samchon/openapi";
 
 const TEMPERATURE = 0.2;
 const FREQUENCY_PENALTY = 0.0;
@@ -309,7 +310,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
         }>(toolUse.arguments);
         if (!validatedArguments.success) {
           throw new Error(
-            `[parsing JSON] your response contains invalid syntax:\n${validatedArguments.errors}`
+            `[parsing JSON] your response contains invalid syntax:\n${typia.json.stringify(validatedArguments.errors)}`
           );
         }
 
@@ -331,21 +332,69 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
           thoughts: string;
           items: {
             purpose: string;
-            functionId: string;
+            function_id: string;
           }[];
         }>(toolUse.arguments);
         if (!validatedArguments.success) {
           throw new Error(
-            `[parsing JSON] your response contains invalid syntax:\n${validatedArguments.errors}`
+            `[parsing JSON] your response contains invalid syntax:\n${typia.json.stringify(validatedArguments.errors)}`
           );
         }
         const { thoughts, items } = validatedArguments.data;
+        const validateFunctionId = (
+          id: string
+        ):
+          | { success: true; data: string }
+          | { success: false; reason: string } => {
+          const m = id.match(/^(get|post|patch|put|delete)(:|\/)(.*)$/i);
+          if (m === undefined || m === null) {
+            return {
+              success: false,
+              reason: `invalid function id: ${id}; function id must be in the format of /^(get|post|patch|put|delete)(:)(.*)$/`,
+            };
+          }
+          const [, method, sep, rest] = m;
+          if (sep === ":") {
+            return {
+              success: true,
+              data: id,
+            };
+          }
+          return {
+            success: true,
+            data: `${method}:${rest}`,
+          };
+        };
         const functions = await Promise.all(
           items.map(async (v) => {
-            const func = await ctx.findFunction(ctx.sessionId, v.functionId);
+            const validatedFunctionId = (() => {
+              const validated = validateFunctionId(v.function_id);
+
+              if (validated.success) {
+                return validated.data;
+              }
+
+              if (
+                typia.is<`${IHttpLlmFunction<ILlmSchema.Model>["method"]}/${string}`>(
+                  v.function_id
+                )
+              ) {
+                const splited = v.function_id.split("/");
+                return `${splited[0]}:${splited.slice(1).join("/")}`;
+              }
+
+              throw new Error(
+                `your response contains an invalid function id \`${v.function_id}\`; reason: \n${typia.json.stringify(validated.reason)}`
+              );
+            })();
+
+            const func = await ctx.findFunction(
+              ctx.sessionId,
+              validatedFunctionId
+            );
             if (!func) {
               throw new Error(
-                `your response contains an invalid function id \`${v.functionId}\`; which does not exist in the list of available functions`
+                `your response contains an invalid function id \`${v.function_id}\`; which does not exist in the list of available functions`
               );
             }
             return {

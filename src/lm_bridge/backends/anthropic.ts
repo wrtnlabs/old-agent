@@ -15,22 +15,33 @@ import {
   TextBlockParam,
   Tool as AnthropicTool,
 } from "@anthropic-ai/sdk/resources";
+import { readEnv } from "@anthropic-ai/sdk/core";
 export class Anthropic implements Backend {
+  private client: AnthropicSdk;
+  public readonly baseUrl: string;
+  constructor(
+    private readonly connection: Connection & { kind: ClaudeBackendKind }
+  ) {
+    this.baseUrl =
+      this.connection.baseUrl ??
+      readEnv("ANTHROPIC_BASE_URL") ??
+      "https://api.anthropic.com";
+
+    this.client = new AnthropicSdk({
+      apiKey: this.connection.apiKey,
+      baseURL: this.baseUrl,
+    });
+  }
   kind(): BackendKind {
-    throw new Error("Method not implemented.");
+    return this.connection.kind;
   }
 
   async makeCompletion(
-    connection: Connection & { kind: ClaudeBackendKind },
     _sessionId: string,
     _stageName: string,
     messages: Message[],
     options: CompletionOptions
   ): Promise<Completion> {
-    const client = new AnthropicSdk({
-      apiKey: connection.apiKey,
-    });
-
     const lmMessages = buildMessages(messages);
     const tools = buildTools(options.tools);
 
@@ -58,12 +69,12 @@ export class Anthropic implements Backend {
         }
       }
     })();
-
-    const response = await client.messages.create(
+    const startTime = performance.now();
+    const response = await this.client.messages.create(
       {
         max_tokens: 4096,
         messages: lmMessages.messages,
-        model: connection.kind.model,
+        model: this.connection.kind.model,
         system: lmMessages.systemPrompt,
         temperature: options.temperature,
         ...toolChoice,
@@ -73,13 +84,14 @@ export class Anthropic implements Backend {
         signal: options.signal,
       }
     );
-
+    const endTime = performance.now();
     const { id, content, model, usage, stop_reason } = response;
 
     return {
       completionId: id,
       model,
       messages: buildCompletionMessages(content),
+      modelResponseMs: endTime - startTime,
       usage: {
         inputTokens: usage?.input_tokens ?? 0,
         outputTokens: usage?.output_tokens ?? 0,

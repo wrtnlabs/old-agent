@@ -4,9 +4,8 @@ import { Completion } from "./outputs/completion";
 
 export interface Backend {
   kind(): BackendKind;
-
+  readonly baseUrl: string;
   makeCompletion(
-    connection: Connection,
     sessionId: string,
     stageName: string,
     messages: Message[],
@@ -37,6 +36,7 @@ export type ClaudeModel =
 export interface Connection {
   kind: BackendKind;
   apiKey: string;
+  baseUrl?: string;
 }
 
 export interface CompletionOptions {
