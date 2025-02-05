@@ -1,6 +1,11 @@
 import { randomInt } from "node:crypto";
 import { setTimeout } from "node:timers/promises";
-import { Backend, Connection } from "./backend";
+import {
+  Backend,
+  ClaudeBackendKind,
+  Connection,
+  OpenAiBackendKind,
+} from "./backend";
 import { Message } from "./inputs/message";
 import { Tool, ToolChoice } from "./inputs/tool";
 import { Completion } from "./outputs/completion";
@@ -26,8 +31,6 @@ const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = {
 export class LmBridge {
   backendFactory: (connection: Connection) => Backend;
 
-  // @TODO FIX it
-  public continueBackend: Backend = undefined as unknown as Backend;
   public temperature: number;
   public jsonMode: boolean;
   public tools: readonly Tool[];
@@ -38,10 +41,14 @@ export class LmBridge {
     this.backendFactory = (connection) => {
       switch (connection.kind.kind) {
         case "openai": {
-          return new OpenAi();
+          return new OpenAi(
+            connection as Connection & { kind: OpenAiBackendKind }
+          );
         }
         case "claude": {
-          return new Anthropic();
+          return new Anthropic(
+            connection as Connection & { kind: ClaudeBackendKind }
+          );
         }
         default: {
           throw new Error("unsupported backend kind");
@@ -103,7 +110,6 @@ export class LmBridge {
     options: LmBridgeRequest
   ): Promise<Completion> {
     const {
-      connection,
       sessionId,
       stageName,
       messages,
@@ -113,7 +119,6 @@ export class LmBridge {
     } = options;
 
     const response = await backend.makeCompletion(
-      connection,
       sessionId,
       stageName,
       messages,
@@ -145,8 +150,7 @@ export class LmBridge {
             },
           ];
 
-          const response = await this.continueBackend.makeCompletion(
-            connection,
+          const response = await backend.makeCompletion(
             sessionId,
             stageName,
             continuedMessages,
@@ -191,6 +195,8 @@ export class LmBridge {
           output_tokens: response.usage.outputTokens,
           created_at: new Date().toISOString(),
           model_response_ms: response.modelResponseMs,
+          model_origin: backend.kind().kind,
+          origin_resource: backend.baseUrl,
         })
       );
     }

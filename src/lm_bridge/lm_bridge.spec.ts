@@ -16,6 +16,7 @@ describe("LmBridge.request", () => {
     const bridge = new LmBridge({ temperature: 0.2, logger: ConsoleLogger });
     const mockBackendFactory = vi.fn(() => ({
       kind: () => DUMMY_CONNECTION.kind,
+      baseUrl: "https://api.openai.com/v1",
       makeCompletion: vi.fn(
         async (): Promise<Completion> => ({
           model: "gpt-4o-2024-11-20",
@@ -66,6 +67,7 @@ describe("LmBridge.request", () => {
     });
     const mockBackendFactory = vi.fn(() => ({
       kind: () => DUMMY_CONNECTION.kind,
+      baseUrl: "https://api.openai.com/v1",
       makeCompletion: vi.fn(
         async (): Promise<Completion> => ({
           model: "gpt-4o-2024-11-20",
