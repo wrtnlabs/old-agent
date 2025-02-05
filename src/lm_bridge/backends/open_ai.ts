@@ -8,6 +8,7 @@ import {
   BackendKind,
   CompletionOptions,
   Connection,
+  OpenAiBackendKind,
 } from "../backend";
 import { Message } from "../inputs/message";
 import { Completion, CompletionMessage } from "../outputs/completion";
@@ -17,23 +18,33 @@ import {
   ChatCompletionToolChoiceOption,
   FunctionParameters,
 } from "openai/resources";
+import { readEnv } from "openai/core";
 
 export class OpenAi implements Backend {
+  private client: OpenAI;
+  public readonly baseUrl: string;
+  constructor(
+    private readonly connection: Connection & { kind: OpenAiBackendKind }
+  ) {
+    this.baseUrl =
+      this.connection.baseUrl ??
+      readEnv("OPENAI_BASE_URL") ??
+      "https://api.openai.com/v1";
+    this.client = new OpenAI({
+      apiKey: connection.apiKey,
+      baseURL: this.baseUrl,
+    });
+  }
   kind(): BackendKind {
-    throw new Error("Method not implemented.");
+    return this.connection.kind;
   }
 
   async makeCompletion(
-    connection: Connection,
     _sessionId: string,
     _stageName: string,
     messages: Message[],
     options: CompletionOptions
   ): Promise<Completion> {
-    const client = new OpenAI({
-      apiKey: connection.apiKey,
-    });
-
     const openAiMessages = buildMessages(messages);
     const tools = buildTools(options.tools);
     let tool_choice: ChatCompletionToolChoiceOption | undefined;
@@ -51,9 +62,10 @@ export class OpenAi implements Backend {
       }
     }
 
-    const response = await client.chat.completions.create(
+    const startTime = performance.now();
+    const response = await this.client.chat.completions.create(
       {
-        model: connection.kind.model,
+        model: this.connection.kind.model,
         temperature: options.temperature,
         frequency_penalty: options.frequencyPenalty,
         messages: openAiMessages,
@@ -65,6 +77,7 @@ export class OpenAi implements Backend {
         signal: options.signal,
       }
     );
+    const endTime = performance.now();
     const {
       id,
       choices: [choice],
@@ -83,6 +96,7 @@ export class OpenAi implements Backend {
         outputTokens: usage?.completion_tokens ?? 0,
       },
       isTruncated: choice.finish_reason === "length",
+      modelResponseMs: endTime - startTime,
     };
   }
 }

@@ -1,12 +1,18 @@
 import { randomInt } from "node:crypto";
 import { setTimeout } from "node:timers/promises";
-import { Backend, Connection } from "./backend";
+import {
+  Backend,
+  ClaudeBackendKind,
+  Connection,
+  OpenAiBackendKind,
+} from "./backend";
 import { Message } from "./inputs/message";
 import { Tool, ToolChoice } from "./inputs/tool";
 import { Completion } from "./outputs/completion";
 import { OpenAi } from "./backends/open_ai";
 import { Anthropic } from "./backends/anthropic";
 import { AgentLogger, NoopLogger } from "../logger";
+import { stringify } from "typia/lib/json";
 
 export interface BackoffStrategy {
   maxRetries: number;
@@ -25,21 +31,24 @@ const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = {
 export class LmBridge {
   backendFactory: (connection: Connection) => Backend;
 
-  // @TODO FIX it
-  public continueBackend: Backend = undefined as unknown as Backend;
   public temperature: number;
   public jsonMode: boolean;
   public tools: readonly Tool[];
   public logger: AgentLogger;
+  public hasCostLog: boolean;
 
   constructor(options: LmBridgeInit) {
     this.backendFactory = (connection) => {
       switch (connection.kind.kind) {
         case "openai": {
-          return new OpenAi();
+          return new OpenAi(
+            connection as Connection & { kind: OpenAiBackendKind }
+          );
         }
         case "claude": {
-          return new Anthropic();
+          return new Anthropic(
+            connection as Connection & { kind: ClaudeBackendKind }
+          );
         }
         default: {
           throw new Error("unsupported backend kind");
@@ -56,6 +65,7 @@ export class LmBridge {
     this.jsonMode = jsonMode;
     this.tools = tools;
     this.logger = logger;
+    this.hasCostLog = !!options.hasCostLog;
   }
 
   async request(options: LmBridgeRequest): Promise<Completion> {
@@ -100,7 +110,6 @@ export class LmBridge {
     options: LmBridgeRequest
   ): Promise<Completion> {
     const {
-      connection,
       sessionId,
       stageName,
       messages,
@@ -108,8 +117,8 @@ export class LmBridge {
       toolChoice,
       signal,
     } = options;
+
     const response = await backend.makeCompletion(
-      connection,
       sessionId,
       stageName,
       messages,
@@ -141,8 +150,7 @@ export class LmBridge {
             },
           ];
 
-          const response = await this.continueBackend.makeCompletion(
-            connection,
+          const response = await backend.makeCompletion(
             sessionId,
             stageName,
             continuedMessages,
@@ -176,6 +184,23 @@ export class LmBridge {
         }
       }
     }
+
+    if (this.hasCostLog) {
+      this.logger.log(
+        stringify({
+          region: "",
+          origin: "",
+          model_name: backend.kind().model,
+          input_tokens: response.usage.inputTokens,
+          output_tokens: response.usage.outputTokens,
+          created_at: new Date().toISOString(),
+          model_response_ms: response.modelResponseMs,
+          model_origin: backend.kind().kind,
+          origin_resource: backend.baseUrl,
+        })
+      );
+    }
+
     return response;
   }
 }
@@ -185,6 +210,7 @@ export interface LmBridgeInit {
   jsonMode?: boolean;
   tools?: readonly Tool[];
   logger: AgentLogger;
+  hasCostLog?: boolean;
 }
 
 export interface LmBridgeRequest {

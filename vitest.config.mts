@@ -15,5 +15,6 @@ export default defineConfig({
       include: ["src/**/*"],
       reporter: ["text", "lcov"],
     },
+    silent: true,
   },
 });
