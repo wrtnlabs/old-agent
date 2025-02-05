@@ -341,13 +341,35 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
           );
         }
         const { thoughts, items } = validatedArguments.data;
+        const validateFunctionId = (
+          id: string
+        ):
+          | { success: true; data: string }
+          | { success: false; reason: string } => {
+          const m = id.match(/^(get|post|patch|put|delete)(:|\/)(.*)$/i);
+          if (m === undefined || m === null) {
+            return {
+              success: false,
+              reason: `invalid function id: ${id}; function id must be in the format of /^(get|post|patch|put|delete)(:)(.*)$/`,
+            };
+          }
+          const [, method, sep, rest] = m;
+          if (sep === ":") {
+            return {
+              success: true,
+              data: id,
+            };
+          }
+          return {
+            success: true,
+            data: `${method}:${rest}`,
+          };
+        };
         const functions = await Promise.all(
           items.map(async (v) => {
             const validatedFunctionId = (() => {
-              const validated =
-                validate<`${IHttpLlmFunction<ILlmSchema.Model>["method"]}:${string}`>(
-                  v.function_id
-                );
+              const validated = validateFunctionId(v.function_id);
+
               if (validated.success) {
                 return validated.data;
               }
@@ -362,7 +384,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
               }
 
               throw new Error(
-                `your response contains an invalid function id \`${v.function_id}\`; reason: \n${typia.json.stringify(validated.errors)}`
+                `your response contains an invalid function id \`${v.function_id}\`; reason: \n${typia.json.stringify(validated.reason)}`
               );
             })();
 
