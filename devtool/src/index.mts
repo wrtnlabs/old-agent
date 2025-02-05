@@ -121,7 +121,7 @@ Agent Rules:
 
   async run() {
     const response = await fetch(
-      "https://wrtnio.github.io/connectors/swagger/openai-positional.json"
+      "https://wrtnlabs.github.io/connectors/swagger/openai-positional.json"
     );
     this.doc = (await response.json()) as IHttpOpenAiApplication;
 
