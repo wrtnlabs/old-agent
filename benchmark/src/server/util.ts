@@ -3,9 +3,9 @@ import { register } from "ts-node";
 import { app } from "./samchon_rhythmical_instrument";
 
 export const extractConnectorOpenApi = async () => {
-  return fetch("https://wrtnio.github.io/connectors/swagger/swagger.json").then(
-    (v) => v.json()
-  );
+  return fetch(
+    "https://wrtnlabs.github.io/connectors/swagger/swagger.json"
+  ).then((v) => v.json());
 };
 export const extractOpenApi = async () => {
   const worker = new workerThreads.Worker("./src/server/util.ts", {
