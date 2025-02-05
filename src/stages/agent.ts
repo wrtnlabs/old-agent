@@ -14,6 +14,7 @@ import { buildLangCodePrompt } from "./lang_code_prompt";
 import { Message } from "../lm_bridge/inputs/message";
 import typia, { validate } from "typia";
 import { buildUserContextPrompt } from "./user_context_prompt";
+import { IHttpLlmFunction, ILlmSchema } from "@samchon/openapi";
 
 const TEMPERATURE = 0.2;
 const FREQUENCY_PENALTY = 0.0;
@@ -344,7 +345,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
           items.map(async (v) => {
             const validatedFunctionId = (() => {
               const validated =
-                validate<`${"get" | "patch" | "post" | "delete" | "put"}:${string}`>(
+                validate<`${IHttpLlmFunction<ILlmSchema.Model>["method"]}:${string}`>(
                   v.function_id
                 );
               if (validated.success) {
@@ -352,7 +353,7 @@ export class Agent implements Stage<Agent.Input, Agent.Output> {
               }
 
               if (
-                typia.is<`${"get" | "patch" | "post" | "delete" | "put"}/${string}`>(
+                typia.is<`${IHttpLlmFunction<ILlmSchema.Model>["method"]}/${string}`>(
                   v.function_id
                 )
               ) {
