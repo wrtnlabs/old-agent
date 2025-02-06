@@ -1,3 +1,4 @@
+import { Temporal } from "temporal-polyfill";
 import { ChatHistory, Dialog } from "./chat_history";
 import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
@@ -22,15 +23,63 @@ export interface MetaAgentSessionManagerStart {
   delegate: MetaAgentSessionDelegate;
 }
 
-export interface InitialInformation {
+export interface InitialInformation extends DateTimeInformation {
   email?: string;
   username?: string;
   job?: string;
-  timezone?: string;
-  datetime?: string;
   gender?: string;
   birth_year?: number;
   lang_code?: string;
+}
+
+export interface DateTimeInformation {
+  timezone?: Temporal.TimeZoneLike;
+  datetime?: string;
+}
+
+export namespace DateTimeInformation {
+  export function toZonedDateTime(
+    info: Readonly<DateTimeInformation>
+  ): Temporal.ZonedDateTime | undefined {
+    if (info.datetime == null) {
+      return;
+    }
+    const timezone = info.timezone ?? "UTC";
+    try {
+      return Temporal.Instant.from(info.datetime).toZonedDateTimeISO(timezone);
+    } catch (e) {
+      if (e instanceof RangeError) {
+        return Temporal.PlainDateTime.from(info.datetime).toZonedDateTime(
+          timezone
+        );
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  export function rewrite(
+    info: DateTimeInformation,
+    defaultTimeZone = "Asia/Seoul"
+  ) {
+    const zonedDateTime = toZonedDateTime(info);
+    if (zonedDateTime == null) {
+      return;
+    }
+    if (info.timezone == null) {
+      info.timezone = defaultTimeZone;
+      info.datetime = zonedDateTime
+        .toPlainDateTime()
+        .toZonedDateTime(defaultTimeZone)
+        .toString({
+          timeZoneName: "never",
+        });
+    } else {
+      info.datetime = zonedDateTime.withTimeZone(info.timezone).toString({
+        timeZoneName: "never",
+      });
+    }
+  }
 }
 
 /**
@@ -71,6 +120,9 @@ export class MetaAgentSessionManager {
       }
     })();
 
+    const initialInformation = { ...options.initialInformation };
+    DateTimeInformation.rewrite(initialInformation);
+
     return new MetaAgentSessionImpl(
       this._stages,
       connection,
@@ -78,7 +130,7 @@ export class MetaAgentSessionManager {
       options.delegate,
       options.sessionId,
       options.platformInfo,
-      options.initialInformation || {},
+      initialInformation,
       new ChatHistory(options.dialogs),
       this._logger
     );
