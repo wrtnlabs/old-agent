@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { DateTimeInformation } from "./session";
+import { beforeAll, afterEach, describe, expect, it, test, vi } from "vitest";
+import { DateTimeInformation, MetaAgentSessionManager } from "./session";
 import { assertGuard } from "typia";
+import { NoopLogger } from "./logger";
+import { NunjucksPromptSet } from "./prompt_set";
+import { MetaAgentSessionDelegate } from "./delegate";
+import { Dialog } from "./chat_history";
 
 describe("DateTimeInformation", () => {
   describe("toZonedDateTime", () => {
@@ -84,4 +88,102 @@ describe("DateTimeInformation", () => {
       }
     );
   });
+});
+
+describe("MetaAgentSessionManager", () => {
+  let sessionManager: MetaAgentSessionManager;
+  const abortController = new AbortController();
+  const OPENAI_API_KEY = process.env["OPENAI_API_KEY"];
+
+  beforeAll(async () => {
+    sessionManager = new MetaAgentSessionManager({
+      promptSet: await NunjucksPromptSet.default(),
+      logger: NoopLogger,
+    });
+  });
+
+  afterEach(() => {
+    abortController.abort();
+  });
+
+  test.runIf(OPENAI_API_KEY != null)(
+    "MetaAgentSession",
+    { timeout: 60_000 },
+    async () => {
+      const delegate = {
+        onError: vi.fn(),
+        onRead: vi
+          .fn<MetaAgentSessionDelegate["onRead"]>()
+          .mockResolvedValue("Hello?"),
+        onMessage: vi.fn<NonNullable<MetaAgentSessionDelegate["onMessage"]>>(),
+        onConnectorCall: vi.fn().mockImplementation(async () => ({})),
+
+        async findFunction(sessionId, name, options) {
+          if (name === "post:/foo/bar") {
+            return {
+              method: "post",
+              path: "/foo/bar",
+              name: "post:/foo/bar",
+              description: "Lorem ipsum",
+              parameters: [],
+            };
+          } else {
+            return undefined;
+          }
+        },
+        async queryFunctions(query) {
+          return [
+            { method: "post", path: "/foo/bar", description: "Lorem ipsum" },
+          ];
+        },
+      } satisfies MetaAgentSessionDelegate;
+      const dialogs: Dialog[] = [];
+      const s = sessionManager.start({
+        llmBackendKind: "openai",
+        llmApiKey: OPENAI_API_KEY!,
+        sessionId: crypto.randomUUID(),
+        initialInformation: {
+          email: "gracie@wrtn.io",
+          username: "Gracie Yu",
+          job: "Developer",
+          timezone: "Asia/Seoul",
+          datetime: new Date().toISOString(),
+        },
+        platformInfo: {
+          prompt: "You are a helpful agent.",
+        },
+        dialogs,
+        delegate,
+      });
+      s.launch(abortController.signal).catch((error) => {
+        console.error(error);
+      });
+
+      await vi.waitUntil(() => delegate.onMessage.mock.calls.length >= 2, {
+        timeout: 30_000,
+        interval: 1_000,
+      });
+
+      const [event1] = delegate.onRead.mock.calls[0]!;
+      const [event2] = delegate.onMessage.mock.calls[0]!;
+      const [event3] = delegate.onMessage.mock.calls[1]!;
+
+      console.log(event1);
+      expect.soft(event1).toBeDefined();
+
+      console.log(event2);
+      expect.soft(event2).toHaveProperty("dialog");
+      expect.soft(event2).toHaveProperty("dialog.speaker.type", "user");
+      expect.soft(event2).toHaveProperty("dialog.visible", true);
+      expect.soft(event2).toHaveProperty("dialog.message.type", "text");
+      expect.soft(event2).toHaveProperty("dialog.message.text");
+
+      console.log(event3);
+      expect.soft(event3).toHaveProperty("dialog");
+      expect.soft(event3).toHaveProperty("dialog.speaker.type", "assistant");
+      expect.soft(event3).toHaveProperty("dialog.visible", true);
+      expect.soft(event3).toHaveProperty("dialog.message.type", "text");
+      expect.soft(event3).toHaveProperty("dialog.message.text");
+    }
+  );
 });
