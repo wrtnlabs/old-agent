@@ -1,4 +1,6 @@
-import { Temporal } from "temporal-polyfill";
+import { tz, tzOffset } from "@date-fns/tz";
+import { formatRFC3339, parseISO, subMinutes } from "date-fns";
+
 import { ChatHistory, Dialog } from "./chat_history";
 import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
@@ -33,52 +35,25 @@ export interface InitialInformation extends DateTimeInformation {
 }
 
 export interface DateTimeInformation {
-  timezone?: Temporal.TimeZoneLike;
+  timezone?: string;
   datetime?: string;
 }
 
 export namespace DateTimeInformation {
-  export function toZonedDateTime(
-    info: Readonly<DateTimeInformation>
-  ): Temporal.ZonedDateTime | undefined {
-    if (info.datetime == null) {
-      return;
-    }
-    const timezone = info.timezone ?? "UTC";
-    try {
-      return Temporal.Instant.from(info.datetime).toZonedDateTimeISO(timezone);
-    } catch (e) {
-      if (e instanceof RangeError) {
-        return Temporal.PlainDateTime.from(info.datetime).toZonedDateTime(
-          timezone
-        );
-      } else {
-        throw e;
-      }
-    }
-  }
-
   export function rewrite(
     info: DateTimeInformation,
     defaultTimeZone = "Asia/Seoul"
   ) {
-    const zonedDateTime = toZonedDateTime(info);
-    if (zonedDateTime == null) {
+    if (info.datetime == null) {
       return;
     }
+    let date: Date | string = info.datetime;
     if (info.timezone == null) {
       info.timezone = defaultTimeZone;
-      info.datetime = zonedDateTime
-        .toPlainDateTime()
-        .toZonedDateTime(defaultTimeZone)
-        .toString({
-          timeZoneName: "never",
-        });
-    } else {
-      info.datetime = zonedDateTime.withTimeZone(info.timezone).toString({
-        timeZoneName: "never",
-      });
+      date = parseISO(info.datetime);
+      date = subMinutes(date, tzOffset(info.timezone, date));
     }
+    info.datetime = formatRFC3339(date, { in: tz(info.timezone) });
   }
 }
 
