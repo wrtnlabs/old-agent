@@ -1,3 +1,6 @@
+import { tz, tzOffset } from "@date-fns/tz";
+import { formatRFC3339, parseISO, subMinutes } from "date-fns";
+
 import { ChatHistory, Dialog } from "./chat_history";
 import { CostDetail } from "./core/cost_detail";
 import { MetaAgentSessionDelegate } from "./delegate";
@@ -22,15 +25,40 @@ export interface MetaAgentSessionManagerStart {
   delegate: MetaAgentSessionDelegate;
 }
 
-export interface InitialInformation {
+export interface InitialInformation extends DateTimeInformation {
   email?: string;
   username?: string;
   job?: string;
-  timezone?: string;
-  datetime?: string;
   gender?: string;
   birth_year?: number;
   lang_code?: string;
+}
+
+export interface DateTimeInformation {
+  timezone?: string;
+  datetime?: string;
+}
+
+export namespace DateTimeInformation {
+  export function rewrite<T extends DateTimeInformation>(
+    info: T,
+    defaultTimeZone = "Asia/Seoul"
+  ): T {
+    if (info.datetime == null) {
+      return info;
+    }
+    const timezone = info.timezone ?? defaultTimeZone;
+    let date: Date | string = info.datetime;
+    if (info.timezone == null) {
+      date = parseISO(info.datetime);
+      date = subMinutes(date, tzOffset(timezone, date));
+    }
+    return {
+      ...info,
+      timezone,
+      datetime: formatRFC3339(date, { in: tz(timezone) }),
+    };
+  }
 }
 
 /**
@@ -71,6 +99,10 @@ export class MetaAgentSessionManager {
       }
     })();
 
+    const initialInformation = DateTimeInformation.rewrite(
+      options.initialInformation ?? {}
+    );
+
     return new MetaAgentSessionImpl(
       this._stages,
       connection,
@@ -78,7 +110,7 @@ export class MetaAgentSessionManager {
       options.delegate,
       options.sessionId,
       options.platformInfo,
-      options.initialInformation || {},
+      initialInformation,
       new ChatHistory(options.dialogs),
       this._logger
     );

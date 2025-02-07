@@ -3,7 +3,7 @@ import {
   ISwaggerSchemaCommonPlugin,
 } from "@wrtnio/schema";
 
-export interface OpenAiFunction extends IHttpOpenAiFunction {}
+export type OpenAiFunction = Omit<IHttpOpenAiFunction, "operation" | "route">;
 
 export interface OpenAiFunctionSummary
   extends Pick<OpenAiFunction, "method" | "path" | "description"> {

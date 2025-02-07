@@ -15,13 +15,13 @@ import { AgentLogger, NoopLogger } from "../logger";
 import { stringify } from "typia/lib/json";
 
 export interface BackoffStrategy {
-  maxRetries: number;
-  backoffFactor: number;
-  initialBackoffMilliseconds: number;
-  maximumBackoffMilliSeconds: number;
+  readonly maxRetries: number;
+  readonly backoffFactor: number;
+  readonly initialBackoffMilliseconds: number;
+  readonly maximumBackoffMilliSeconds: number;
 }
 
-const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = {
+export const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = {
   maxRetries: 6,
   backoffFactor: 2.0,
   initialBackoffMilliseconds: 500,
@@ -225,8 +225,8 @@ export interface LmBridgeRequest {
   signal?: AbortSignal;
 }
 
-class BackoffError extends Error {
-  constructor(message: string) {
+export class BackoffError extends Error {
+  constructor(message?: string) {
     super(message);
     this.name = "BackoffError";
   }
