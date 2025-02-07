@@ -21,12 +21,12 @@ export interface BackoffStrategy {
   readonly maximumBackoffMilliSeconds: number;
 }
 
-export const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = Object.freeze({
+export const DEFAULT_BACKOFF_STRATEGY: BackoffStrategy = {
   maxRetries: 6,
   backoffFactor: 2.0,
   initialBackoffMilliseconds: 500,
   maximumBackoffMilliSeconds: 16000,
-});
+};
 
 export class LmBridge {
   backendFactory: (connection: Connection) => Backend;
