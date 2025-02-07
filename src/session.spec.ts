@@ -1,5 +1,9 @@
 import { beforeAll, afterEach, describe, expect, it, test, vi } from "vitest";
-import { DateTimeInformation, MetaAgentSessionManager } from "./session";
+import {
+  DateTimeInformation,
+  InitialInformation,
+  MetaAgentSessionManager,
+} from "./session";
 import { NoopLogger } from "./logger";
 import { NunjucksPromptSet } from "./prompt_set";
 import { MetaAgentSessionDelegate } from "./delegate";
@@ -11,18 +15,18 @@ describe("DateTimeInformation", () => {
       const info: DateTimeInformation = {
         datetime: "2022-01-23T12:34:56+00:00",
       };
-      DateTimeInformation.rewrite(info);
-      expect.soft(info.timezone).toBe("Asia/Seoul");
-      expect.soft(info.datetime).toBe("2022-01-23T12:34:56+09:00");
+      const rewritten = DateTimeInformation.rewrite(info);
+      expect.soft(rewritten.timezone).toBe("Asia/Seoul");
+      expect.soft(rewritten.datetime).toBe("2022-01-23T12:34:56+09:00");
     });
 
     it("should rewrite as given default time zone", () => {
       const info: DateTimeInformation = {
         datetime: "2022-01-23T12:34:56+00:00",
       };
-      DateTimeInformation.rewrite(info, "America/New_York");
-      expect.soft(info.timezone).toBe("America/New_York");
-      expect.soft(info.datetime).toBe("2022-01-23T12:34:56-05:00");
+      const rewritten = DateTimeInformation.rewrite(info, "America/New_York");
+      expect.soft(rewritten.timezone).toBe("America/New_York");
+      expect.soft(rewritten.datetime).toBe("2022-01-23T12:34:56-05:00");
     });
 
     it.for([
@@ -38,10 +42,26 @@ describe("DateTimeInformation", () => {
           datetime: "2022-01-23T12:34:56+00:00",
           timezone,
         };
-        DateTimeInformation.rewrite(info);
-        expect(info.datetime).toBe(expected);
+        const rewritten = DateTimeInformation.rewrite(info);
+        expect(rewritten.datetime).toBe(expected);
       }
     );
+
+    it("should preserve rest of the information", () => {
+      const info: InitialInformation = {
+        datetime: "2022-01-23T12:34:56+00:00",
+        email: "test@example.com",
+        username: "test",
+        timezone: "America/New_York",
+      };
+      const rewritten = DateTimeInformation.rewrite(info);
+      expect.soft(rewritten).toEqual({
+        datetime: "2022-01-23T07:34:56-05:00",
+        email: "test@example.com",
+        username: "test",
+        timezone: "America/New_York",
+      });
+    });
   });
 });
 

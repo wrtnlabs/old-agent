@@ -40,20 +40,24 @@ export interface DateTimeInformation {
 }
 
 export namespace DateTimeInformation {
-  export function rewrite(
-    info: DateTimeInformation,
+  export function rewrite<T extends DateTimeInformation>(
+    info: T,
     defaultTimeZone = "Asia/Seoul"
-  ) {
+  ): T {
     if (info.datetime == null) {
-      return;
+      return info;
     }
+    const timezone = info.timezone ?? defaultTimeZone;
     let date: Date | string = info.datetime;
     if (info.timezone == null) {
-      info.timezone = defaultTimeZone;
       date = parseISO(info.datetime);
-      date = subMinutes(date, tzOffset(info.timezone, date));
+      date = subMinutes(date, tzOffset(timezone, date));
     }
-    info.datetime = formatRFC3339(date, { in: tz(info.timezone) });
+    return {
+      ...info,
+      timezone,
+      datetime: formatRFC3339(date, { in: tz(timezone) }),
+    };
   }
 }
 
@@ -95,8 +99,9 @@ export class MetaAgentSessionManager {
       }
     })();
 
-    const initialInformation = { ...options.initialInformation };
-    DateTimeInformation.rewrite(initialInformation);
+    const initialInformation = DateTimeInformation.rewrite(
+      options.initialInformation ?? {}
+    );
 
     return new MetaAgentSessionImpl(
       this._stages,
